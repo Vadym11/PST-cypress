@@ -37,6 +37,7 @@ describe('Login', () => {
 
     cy.get('[data-test="login-submit"]').should('be.visible').click();
 
+    // cy.get('h1').should('have.text', 'My account').debug();
 
     cy.get('[data-test="nav-favorites"]').then(($element) => {
       cy.log(`Element text: ${$element.text()}`);
@@ -47,8 +48,6 @@ describe('Login', () => {
     });
 
     cy.log(`Variable after reassignment 2: ${a}`);
-
-    cy.wait(1000); // Wait for the page to load completely
   });
 
   it('should display the login form when navigating directly to /auth/login', () => {

@@ -1,5 +1,5 @@
-const { defineConfig } = require("cypress");
 import dotenv from 'dotenv';
+const { defineConfig } = require("cypress");
 dotenv.config();
 const BASE_URL = process.env.BASE_URL || 'https://practicesoftwaretesting.com';
 

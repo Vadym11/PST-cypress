@@ -1,23 +1,31 @@
 export class AccountPage {
 
-    private get navButtons() {
-        return cy.get('.btn-group-vertical > a');
+    private readonly navButtonsSelector = '.btn-group-vertical > a';
+    private readonly titleSelector = 'h1';
+    private readonly infoMessageSelector = 'h1 + p';  // or however it's structured
+
+    private navButtons() {
+        return cy.get(this.navButtonsSelector);
     }
 
-    goToFavorites(): void {
+    goToFavorites(): AccountPage {
         cy.findByTestId('nav-favorites').click();
+        return this;
     }
 
-    goToProfile(): void {
+    goToProfile(): AccountPage {
         cy.findByTestId('nav-profile').click();
+        return this;
     }
 
-    goToInvoices(): void {
+    goToInvoices(): AccountPage {
         cy.findByTestId('nav-invoices').click();
+        return this;
     }
 
-    goToMessages(): void {
+    goToMessages(): AccountPage {
         cy.findByTestId('nav-messages').click();
+        return this;
     }
 
     /**
@@ -26,7 +34,7 @@ export class AccountPage {
      * @returns 
      */
     verifyPageTitle(expectedTitle: string): AccountPage {
-        cy.get('h1').should('have.text', expectedTitle);
+        cy.get(this.titleSelector).should('have.text', expectedTitle);
         return this;
     }
 
@@ -35,10 +43,12 @@ export class AccountPage {
      * @param expectedTexts 
      */
     verifyNavButtonText(expectedTexts: string[]): AccountPage {
-        this.navButtons.each(($el, index) => {
-            cy.wrap($el).should('contain.text', expectedTexts[index]);
+        this.navButtons().should(($els) => {
+            expect($els).to.have.length(expectedTexts.length);
+            $els.each((index, el) => {
+                expect(el).to.contain.text(expectedTexts[index]);
+            });
         });
-
         return this;
     }
 
@@ -48,7 +58,7 @@ export class AccountPage {
      * @returns 
      */
     verifyInfoMessage(expectedMessage: string): AccountPage {
-        cy.get('h1').next('p').should('have.text', expectedMessage);
+        cy.get(this.infoMessageSelector).should('have.text', expectedMessage);
 
         return this;
     }
@@ -59,8 +69,9 @@ export class AccountPage {
      * @param infoMessage 
      * @param navButtonsTexts 
      */
-    verifyAccountPage(title: string, infoMessage: string, navButtonsTexts: string[]): void {
-        this.verifyPageTitle(title)
+    verifyAccountPage(title: string, infoMessage: string, navButtonsTexts: string[]): AccountPage {
+        return this
+            .verifyPageTitle(title)
             .verifyNavButtonText(navButtonsTexts)
             .verifyInfoMessage(infoMessage);
     }
