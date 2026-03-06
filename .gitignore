@@ -9,5 +9,5 @@ cypress/fixtures/profile.json
 cypress/fixtures/users.json
 .history
 .vscode
-env
+.env
 .DS_Store

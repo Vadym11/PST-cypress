@@ -1,7 +1,13 @@
 {
+  "scripts": {
+    "test:ui": "cypress run --spec 'cypress/e2e/ui/**/*'",
+    "test:api": "cypress run --spec 'cypress/e2e/api/**/*'",
+    "test:smoke": "cypress run --spec 'cypress/e2e/smoke/*.cy.js'"
+  },
   "devDependencies": {
     "@testing-library/cypress": "^10.1.0",
     "cypress": "^15.11.0",
+    "dotenv": "^17.3.1",
     "typescript": "^5.9.3"
   }
 }

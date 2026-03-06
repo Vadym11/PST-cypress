@@ -17,4 +17,4 @@
 import './commands'
 import { configure } from '@testing-library/cypress'
 
-configure({ testIdAttribute: 'data-test' })
+configure({ testIdAttribute: 'data-test' });

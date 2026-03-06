@@ -1,19 +1,24 @@
+import { LoginPage } from "../../support/page-objects/LoginPage";
+import { urls, loadUserCreds } from "../../support/utils/project-utils";
+
 describe('Login', () => {
   let a = 'Initial value';
   let fixtureData: any;
   let userData: any;
-  let baseUrl: string;
-  let apiUrl: string;
+  let email: string;
+  let password: string;
+  const baseUrl = urls.baseUrl;
+  const apiUrl = urls.apiUrl;
 
   before(() => {
-    baseUrl = Cypress.config().baseUrl;
-    apiUrl = baseUrl.slice(0, baseUrl.length - 4) + '8091';
-    cy.log(`Base API URL: ${apiUrl}`);
+    loadUserCreds().then(({ userEmail, userPassword }) => {
+      email = userEmail;
+      password = userPassword;
+    });    
   })
 
-
   beforeEach(() => {
-    cy.visit('/');
+    // cy.visit('/');
     a = 'Before each value';
     cy.fixture('products').then((data) => {
      fixtureData = data;
@@ -27,12 +32,11 @@ describe('Login', () => {
 
   it('should display the login form', () => {
     cy.get('[data-test="nav-sign-in"]').click();
-    cy.get('#email').as('email').should('be.visible').type('customer2@practicesoftwaretesting.com');
-    cy.get('#password').as('password').should('be.visible').type('welcome01');
+    cy.get('#email').as('email').should('be.visible').type(email);
+    cy.get('#password').as('password').should('be.visible').type(password);
 
     cy.get('[data-test="login-submit"]').should('be.visible').click();
 
-    // cy.get('h1').should('have.text', 'My account').debug();
 
     cy.get('[data-test="nav-favorites"]').then(($element) => {
       cy.log(`Element text: ${$element.text()}`);
@@ -51,16 +55,14 @@ describe('Login', () => {
     cy.log(`Variable in a different test: ${a}`);
 
     cy.visit('/auth/login');
-    cy.findByTestId('email').should('be.visible').type('customer2@practicesoftwaretesting.com');
-    cy.findByTestId('password').should('be.visible').type('welcome01');
+    cy.findByTestId('email').should('be.visible').type(email);
+    cy.findByTestId('password').should('be.visible').type(password);
     cy.findByTestId('login-submit').should('be.visible').click();
 
     cy.url().should('include', '/auth/login');
   });
 
   it('should return array of products', () => {
-    const baseUrl = Cypress.config().baseUrl;
-    const apiUrl = baseUrl.slice(0, baseUrl.length - 4) + '8091/products';
     cy.log(`Base URL: ${baseUrl}`);
     
     cy.log(`Email from fixture: ${fixtureData.email}`);
@@ -89,7 +91,7 @@ describe('Login', () => {
     cy.get('.card').eq(0).findByTestId('product-price').should('have.text', '$99.99');
   });
 
-  it.only('intercept current user', () => {
+  it('intercept current user', () => {
     // const baseUrl = Cypress.config().baseUrl;
     cy.log(`Base URL: ${baseUrl}`);
     cy.intercept('GET', '**/me', userData).as('currentUser');
@@ -104,5 +106,17 @@ describe('Login', () => {
     // cy.wait(5000);
 
     // cy.get('.card').eq(0).findByTestId('product-price').should('have.text', '$99.99');
+  });
+
+  it.only('happy path', () => {
+    const loginPage = new LoginPage();
+    const pageTitle = 'My account';
+    const infoMessage = 'Here you can manage your profile, favorites and orders.';
+    const navButtonsTexts = ['Favorites', 'Profile', 'Invoices', 'Messages'];
+
+    loginPage
+      .goTo()
+      .login(email, password)
+      .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
   });
 });
