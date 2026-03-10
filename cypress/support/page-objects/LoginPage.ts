@@ -26,6 +26,8 @@ export class LoginPage {
         this.fillPassword(password);
         this.submit();
 
+        cy.wait(5000); // Wait for the login process to complete and the page to update
+
         return new AccountPage();
     }
 }

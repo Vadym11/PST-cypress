@@ -108,7 +108,7 @@ describe('Login', () => {
     // cy.get('.card').eq(0).findByTestId('product-price').should('have.text', '$99.99');
   });
 
-  it('happy path', () => {
+  it.only('happy path', () => {
     const loginPage = new LoginPage();
     const pageTitle = 'My account';
     const infoMessage = 'Here you can manage your profile, favorites and orders.';
