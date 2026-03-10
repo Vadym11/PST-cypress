@@ -2,7 +2,8 @@
   "scripts": {
     "test:ui": "cypress run --spec 'cypress/e2e/ui/**/*'",
     "test:api": "cypress run --spec 'cypress/e2e/api/**/*'",
-    "test:smoke": "cypress run --spec 'cypress/e2e/smoke/*.cy.js'"
+    "test:smoke": "cypress run --spec 'cypress/e2e/smoke/*.cy.js'",
+    "test:all": "cypress run"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
