@@ -18,15 +18,15 @@ export class LoginPage {
     }
 
     submit() {
-        cy.findByTestId('login-submit').click();
+        cy.findByTestId('login-submit').click().then(() => {
+            cy.wait(5000);
+        });
     }
 
     login(email: string, password: string): AccountPage {
         this.fillEmail(email);
         this.fillPassword(password);
         this.submit();
-
-        cy.wait(5000); // Wait for the login process to complete and the page to update
 
         return new AccountPage();
     }
