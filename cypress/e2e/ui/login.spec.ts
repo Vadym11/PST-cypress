@@ -118,9 +118,10 @@ describe('Login', () => {
       .goTo()
       .login(email, password)
     
-    cy.reload();
+    // cy.reload();
 
-    cy.visit('/').then(() => {
+    cy.url().then((url) => {
+      cy.log(`Current URL: ${url}`);
       cy.wait(5000);
     });
       // .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
