@@ -1,4 +1,4 @@
-import { Header } from "../../support/page-objects/HeaderCommon";
+import { Header } from "../../support/page-objects/HeaderComponent";
 import { Languages } from "../../support/types/languages";
 import { ToolCategories } from "../../support/types/tool-categories";
 

@@ -9,28 +9,36 @@ export class Header {
   private readonly signinTestId = 'nav-sign-in';
   private readonly languageSelectTestId = 'language-select';
 
-  private get homePageLink() {
-    return cy.findByTestId(this.homePageTestId);
+  private byTestId(testId: string) {
+    return cy.findByTestId(testId);
+  }
+
+  private homePageLink() {
+    return this.byTestId(this.homePageTestId);
   }
 
   private categoriesDropDown() {
-    return cy.findByTestId(this.categoriesTestId);
+    return this.byTestId(this.categoriesTestId);
   }
 
   private contactsLink() {
-    return cy.findByTestId(this.contactsTestId);
+    return this.byTestId(this.contactsTestId);
   }
 
   private signinLink() {
-    return cy.findByTestId(this.signinTestId);
+    return this.byTestId(this.signinTestId);
   }
 
   private languageDropDown() {
-    return cy.findByTestId(this.languageSelectTestId);
+    return this.byTestId(this.languageSelectTestId);
+  }
+
+  private activeDropdownMenu() {
+    return cy.get('.dropdown-menu.show');
   }
 
   clickHomePage() {
-    this.homePageLink.click();
+    this.homePageLink().click();
   }
 
   clickCategoriesDropDown() {
@@ -49,17 +57,13 @@ export class Header {
     this.languageDropDown().click();
   }
 
-  clickLanguage(language: string) {
-    cy.findByText(language).click();
-  }
-
   selectLanguage(language: Languages) {
     this.openLanguageDropdown();
-    cy.findByText(language).click();
+    this.activeDropdownMenu().contains(language).click();
   }
 
   selectToolsCategory(category: ToolCategories) {
     this.clickCategoriesDropDown();
-    cy.get('.dropdown-item').findByText(category).click();
+    this.activeDropdownMenu().contains(category).click();
   }
 }

@@ -1,21 +1,11 @@
-// function getUserCredentials() {
-//     let email: string;
-//     let password: string;
-//     cy.env(['userEmail', 'userPassword']).then(({userEmail, userPassword}) => {
-//       email = userEmail;
-//       password = userPassword;
-//       cy.log(`Email from env: ${email}`);
-//       cy.log(`Password from env: ${password}`);
-//     });
-
-//     return { email, password };
-// }
-
-// export const userCreds = getUserCredentials();
-
 export function loadUserCreds() {
     // Return the command chain so the test can wait for it
     return cy.env(['userEmail', 'userPassword']);
+}
+
+export function loadAdminCreds() {
+    // Return the command chain so the test can wait for it
+    return cy.env(['adminEmail', 'adminPassword']);
 }
 
 function getUrls() {
