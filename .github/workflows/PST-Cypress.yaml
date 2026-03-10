@@ -24,3 +24,9 @@ jobs:
 
       - name: Run Cypress tests
         run: npm run test:all
+        env:
+            ADMIN_USER_EMAIL: ${{ secrets.ADMIN_USER_EMAIL }}
+            ADMIN_USER_PASSWORD: ${{ secrets.ADMIN_USER_PASSWORD }}
+            USER_EMAIL: ${{ secrets.USER_EMAIL }}
+            USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+            BASE_URL: ${{ secrets.BASE_URL }}
