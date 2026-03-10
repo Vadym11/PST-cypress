@@ -13,6 +13,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get Runner Public IP
+        run: curl https://ifconfig.me
+
+      - name: Test site reachability (Standard Curl)
+        run: |
+          curl -I -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" https://practicesoftwaretesting.com
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
