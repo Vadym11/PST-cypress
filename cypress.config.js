@@ -15,6 +15,7 @@ module.exports = defineConfig({
   },
   e2e: {
     baseUrl: BASE_URL,
+    video: true,
     setupNodeEvents(on, config) {
       // this is needed to avoid 403 Forbidden errors when running tests in Chrome
       on('before:browser:launch', (browser, launchOptions) => {

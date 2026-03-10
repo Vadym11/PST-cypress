@@ -3,7 +3,6 @@ name: Cypress Tests
 on:
   push:
     branches: [main]
-
   pull_request:
     branches: [main]
 
@@ -12,34 +11,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run Cypress tests
         run: npm run test:all -- --browser chrome
         env:
-            ADMIN_USER_EMAIL: ${{ secrets.ADMIN_USER_EMAIL }}
-            ADMIN_USER_PASSWORD: ${{ secrets.ADMIN_USER_PASSWORD }}
-            USER_EMAIL: ${{ secrets.USER_EMAIL }}
-            USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
-            BASE_URL: ${{ secrets.BASE_URL }}
+          ADMIN_USER_EMAIL: ${{ secrets.ADMIN_USER_EMAIL }}
+          ADMIN_USER_PASSWORD: ${{ secrets.ADMIN_USER_PASSWORD }}
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+          USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+          BASE_URL: ${{ secrets.BASE_URL }}
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-            name: cypress-screenshots
-            path: cypress/screenshots
+          name: cypress-screenshots
+          path: cypress/screenshots
+
       - name: Upload videos
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-            name: cypress-videos
-            path: cypress/videos
+          name: cypress-videos
+          path: cypress/videos
