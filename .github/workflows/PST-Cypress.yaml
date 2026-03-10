@@ -30,3 +30,16 @@ jobs:
             USER_EMAIL: ${{ secrets.USER_EMAIL }}
             USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
             BASE_URL: ${{ secrets.BASE_URL }}
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+            name: cypress-screenshots
+            path: cypress/screenshots
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+            name: cypress-videos
+            path: cypress/videos
