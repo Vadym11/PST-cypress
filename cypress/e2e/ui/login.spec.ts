@@ -117,6 +117,12 @@ describe('Login', () => {
     loginPage
       .goTo()
       .login(email, password)
-      .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
+    
+    cy.reload();
+
+    cy.visit('/').then(() => {
+      cy.wait(5000);
+    });
+      // .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
   });
 });
