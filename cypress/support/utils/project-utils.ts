@@ -17,7 +17,7 @@ function getUrls() {
     } else if (baseUrl.endsWith('8080')) {
       apiUrl = `${baseUrl}/api`;
     } else {
-      apiUrl = 'http://api.practicesoftwaretesting.com';
+      apiUrl = 'https://api.practicesoftwaretesting.com';
     }
     return { baseUrl, apiUrl };
 }
