@@ -7,29 +7,51 @@ on:
     branches: [main]
 
 jobs:
-  cypress-run:
+  cypress-tests:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Get Runner Public IP
-        run: curl https://ifconfig.me
-
-      - name: Test site reachability (Standard Curl)
-        run: |
-          curl -I -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" https://practicesoftwaretesting.com
+      - name: Check for changes in Cypress files
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            cypress:
+              - 'cypress/**'
+              - 'cypress.config.js'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/PST-Cypress.yaml'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Build check marker
+        if: steps.changes.outputs.cypress == 'true' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force-build'))
+        run: echo "Cypress-related changes detected or force-build label present."
+
+      - name: Get Runner Public IP
+        run: curl https://ifconfig.me
+
+      - name: Test site reachability
+        run: |
+          curl -I -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" https://practicesoftwaretesting.com
+
       - name: Run Cypress tests
-        run: npm run test:all -- --browser chrome
+        run: |
+          set -euo pipefail
+          npm run test:all -- --browser chrome
         env:
           ADMIN_USER_EMAIL: ${{ secrets.ADMIN_USER_EMAIL }}
           ADMIN_USER_PASSWORD: ${{ secrets.ADMIN_USER_PASSWORD }}
@@ -39,14 +61,16 @@ jobs:
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: cypress-screenshots
           path: cypress/screenshots
+          if-no-files-found: ignore
 
       - name: Upload videos
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: cypress-videos
           path: cypress/videos
+          if-no-files-found: ignore
