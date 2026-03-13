@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pst-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pst-web
+  template:
+    metadata:
+      labels:
+        app: pst-web
+    spec:
+      containers:
+        - name: web
+          image: europe-west1-docker.pkg.dev/project-2e1e6c1d-528d-4a3a-803/toolshop/web-k8s:35bce3f
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_WEB_HOST
+              value: apiweb          # ← was pst-apiweb
+            - name: API_WEB_PORT
+              value: "80"
+# Load Balancer needed if app needs to be exposed to internet.
+# External ip is assigned in this case that can be used.
+# Wi will be using port-forward for now (so we need cluster IP instead)
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: pst-web
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app: pst-web
+#   ports:
+#     - name: http
+#       port: 80
+#       targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pst-web
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: pst-web
