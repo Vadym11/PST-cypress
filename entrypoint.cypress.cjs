@@ -79,9 +79,13 @@ async function sendSlackNotification({ exitCode, durationMs }) {
   console.log("SLACK_WEBHOOK set:", Boolean(SLACK_WEBHOOK));
 
   const start = Date.now();
-  const proc = spawn("npm", ["run", "test:all", "--", "--browser", "chrome"], {
-    stdio: "inherit",
-  });
+  const proc = spawn(
+    "npm",
+    ["run", "test:all", "--", "--browser", "chrome", "--headless"],
+    {
+      stdio: "inherit",
+    }
+  );
 
   proc.on("close", async (code) => {
     const normalizedCode = typeof code === "number" ? code : 1;

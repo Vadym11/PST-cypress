@@ -15,17 +15,17 @@ module.exports = defineConfig({
   },
   e2e: {
     baseUrl: BASE_URL,
-    video: true,
+    video: process.env.CYPRESS_VIDEO === 'true',
+    numTestsKeptInMemory: 0,
     setupNodeEvents(on, config) {
-      // this is needed to avoid 403 Forbidden errors when running tests in Chrome
-      // on('before:browser:launch', (browser, launchOptions) => {
-      //   if (browser.name === 'chrome') {
-      //     launchOptions.args.push(
-      //       '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
-      //     );
-      //   }
-      //   return launchOptions;
-      // });
+      on('before:browser:launch', (browser, launchOptions) => {
+        if (browser.name === 'chrome') {
+          launchOptions.args.push('--disable-dev-shm-usage');
+          launchOptions.args.push('--no-sandbox');
+          launchOptions.args.push('--disable-gpu');
+        }
+        return launchOptions;
+      });
     },
     specPattern: 'cypress/e2e/**/*.{cy,spec}.{js,jsx,ts,tsx}'
   },
