@@ -123,16 +123,33 @@ jobs:
       - name: Wait for Test Completion
         run: |
           set -euo pipefail
+          echo "Waiting for Cypress job to complete..."
+          kubectl wait --for=condition=complete job/pst-cypress-tests -n "$K8S_NAMESPACE" --timeout=900s || true
+
           POD_NAME=$(kubectl get pods -n "$K8S_NAMESPACE" -l job-name=pst-cypress-tests -o jsonpath='{.items[0].metadata.name}')
+          if [ -z "$POD_NAME" ]; then
+            echo "Cypress pod not found."
+            exit 1
+          fi
 
-          echo "Waiting for tests_finished.txt..."
-          timeout 900s sh -c "until kubectl exec -n \"$K8S_NAMESPACE\" \"$POD_NAME\" -- test -f /tests/tests_finished.txt; do sleep 5; done"
+          TEST_EXIT_CODE=""
+          for _ in $(seq 1 30); do
+            TEST_EXIT_CODE=$(kubectl get pod -n "$K8S_NAMESPACE" "$POD_NAME" -o jsonpath='{.status.containerStatuses[0].state.terminated.exitCode}' 2>/dev/null || true)
+            if [ -n "$TEST_EXIT_CODE" ]; then
+              break
+            fi
+            sleep 2
+          done
 
-          TEST_EXIT_CODE=$(kubectl exec -n "$K8S_NAMESPACE" "$POD_NAME" -- cat /tests/tests_finished.txt)
-          echo "Cypress exited with code: $TEST_EXIT_CODE"
+          if [ -z "$TEST_EXIT_CODE" ]; then
+            echo "Could not determine Cypress exit code from pod status."
+            kubectl describe pod -n "$K8S_NAMESPACE" "$POD_NAME" || true
+            exit 1
+          fi
 
           echo "Fetching Cypress test pod logs for debugging..."
           kubectl logs -n "$K8S_NAMESPACE" "$POD_NAME"
+          echo "Cypress exited with code: $TEST_EXIT_CODE"
 
           if [ "$TEST_EXIT_CODE" -ne "0" ]; then
             echo "Tests failed! Exiting pipeline with error."
