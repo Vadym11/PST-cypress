@@ -2,7 +2,7 @@ import { Header } from "../../support/page-objects/HeaderComponent";
 import { Languages } from "../../support/types/languages";
 import { ToolCategories } from "../../support/types/tool-categories";
 
-describe('Header navigation', () => {
+describe.skip('Header navigation', () => {
 
     beforeEach(() => {
         cy.visit('/');

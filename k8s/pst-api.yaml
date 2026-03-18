@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pst-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pst-api
+  template:
+    metadata:
+      labels:
+        app: pst-api
+    spec:
+      containers:
+        - name: api
+          image: europe-west1-docker.pkg.dev/project-2e1e6c1d-528d-4a3a-803/toolshop/api-k8s:35bce3f
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+          env:
+            - name: APP_ENV
+              value: production
+            - name: APP_DEBUG
+              value: "false"
+            - name: APP_URL
+              value: http://apiweb      # was http://pst-apiweb
+            - name: DB_CONNECTION
+              value: mysql
+            - name: DB_HOST
+              value: pst-db
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_DATABASE
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api             # ← was pst-api
+spec:
+  type: ClusterIP
+  selector:
+    app: pst-api
+  ports:
+    - name: fpm
+      port: 9000
+      targetPort: 9000

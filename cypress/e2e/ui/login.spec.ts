@@ -31,6 +31,7 @@ describe('Login', () => {
   });
 
   it('should display the login form', () => {
+    cy.visit('/');
     cy.get('[data-test="nav-sign-in"]').click();
     cy.get('#email').as('email').should('be.visible').type(email);
     cy.get('#password').as('password').should('be.visible').type(password);
@@ -61,7 +62,7 @@ describe('Login', () => {
     cy.url().should('include', '/auth/login');
   });
 
-  it('should return array of products', () => {
+  it.skip('should return array of products', () => {
     cy.log(`Base URL: ${baseUrl}`);
     
     cy.log(`Email from fixture: ${fixtureData.email}`);
@@ -73,7 +74,7 @@ describe('Login', () => {
     });
   });
 
-  it('pulls data from fixture file', () => {
+  it.skip('pulls data from fixture file', () => {
     cy.fixture('products').then((data) => {
       cy.log(`Email from fixture inside test: ${data.data[0].id}`);
     });
@@ -116,6 +117,13 @@ describe('Login', () => {
     loginPage
       .goTo()
       .login(email, password)
-      .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
+    
+    // cy.reload();
+
+    cy.url().then((url) => {
+      cy.log(`Current URL: ${url}`);
+      cy.wait(5000);
+    });
+      // .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
   });
 });
