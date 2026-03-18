@@ -62,19 +62,17 @@ describe('Login', () => {
     cy.url().should('include', '/auth/login');
   });
 
-  it.skip('should return array of products', () => {
+  it('should return array of products', () => {
     cy.log(`Base URL: ${baseUrl}`);
     
-    cy.log(`Email from fixture: ${fixtureData.email}`);
-    cy.request(apiUrl).then((response) => {
+    cy.request(`${apiUrl}/products`).then((response) => {
       expect(response.status).to.eq(200);
       cy.log(`Response body: ${JSON.stringify(response.body)}`);
-      cy.writeFile('cypress/fixtures/products.json', response.body);
       expect(response.body['data']).to.be.an('array');
     });
   });
 
-  it.skip('pulls data from fixture file', () => {
+  it('pulls data from fixture file', () => {
     cy.fixture('products').then((data) => {
       cy.log(`Email from fixture inside test: ${data.data[0].id}`);
     });
@@ -84,8 +82,8 @@ describe('Login', () => {
     cy.intercept('GET', '**/products?*', fixtureData).as('getProducts');
     cy.visit('/');
     cy.wait('@getProducts').then((interception) => {
-      expect(interception.response.statusCode).to.eq(200);
-      cy.log(`Intercepted response body: ${JSON.stringify(interception.response.body)}`);
+      expect(interception.response?.statusCode).to.eq(200);
+      cy.log(`Intercepted response body: ${JSON.stringify(interception.response?.body)}`);
     });
 
     cy.get('.card').eq(0).findByTestId('product-price').should('have.text', '$99.99');
@@ -97,8 +95,8 @@ describe('Login', () => {
     cy.intercept('GET', '**/me', userData).as('currentUser');
     cy.visit('/');
     cy.wait('@currentUser').then((interception) => {
-      expect(interception.response.statusCode).to.eq(200);
-      cy.log(`Intercepted response body: ${JSON.stringify(interception.response.body)}`);
+      expect(interception.response?.statusCode).to.eq(200);
+      cy.log(`Intercepted response body: ${JSON.stringify(interception.response?.body)}`);
     });
 
     cy.visit('/account/profile');
@@ -108,7 +106,7 @@ describe('Login', () => {
     // cy.get('.card').eq(0).findByTestId('product-price').should('have.text', '$99.99');
   });
 
-  it.only('happy path', () => {
+  it('happy path', () => {
     const loginPage = new LoginPage();
     const pageTitle = 'My account';
     const infoMessage = 'Here you can manage your profile, favorites and orders.';
@@ -117,13 +115,6 @@ describe('Login', () => {
     loginPage
       .goTo()
       .login(email, password)
-    
-    // cy.reload();
-
-    cy.url().then((url) => {
-      cy.log(`Current URL: ${url}`);
-      cy.wait(5000);
-    });
-      // .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
+      .verifyAccountPage(pageTitle, infoMessage, navButtonsTexts);
   });
 });

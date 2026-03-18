@@ -14,6 +14,10 @@ export class LoginPage {
         return this;
     }
 
+    getPageHeader() {
+        return cy.get('h3');
+    }
+
     fillEmail(email: string): void {
         cy.findByTestId('email').type(email);
     }
@@ -23,9 +27,7 @@ export class LoginPage {
     }
 
     submit() {
-        cy.findByTestId('login-submit').click().then(() => {
-            cy.wait(5000);
-        });
+        cy.findByTestId('login-submit').click();
     }
 
     login(email: string, password: string): AccountPage {

@@ -1,14 +1,14 @@
-import fs from 'fs';
-import path from 'path';
+import { CreateUser } from '../types/user';
+import { faker } from '@faker-js/faker';
+const countries = require('../../support/data/countries.json');
+
 /**
  * Generates random user data for registration.
  * User data is sourced from predefined arrays in registerUserData.json.
  * @returns A User object with random data.
  */
 export function generateRandomUserData(userData) {
-//   const dataFilePath = path.join(process.cwd(), './cypress/support/data/user-data.json');
-// //   fs.readFile
-//   const userData = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+
   const randomNumber = getRandomIntInclusive(0, 9999);
 
   const FIRST_NAME = getRandomArrayElement(userData.firstNames);
@@ -63,4 +63,41 @@ export function getRandomIntInclusive(min: number, max: number): number {
  */
 export function getRandomArrayElement(array: any[]) {
   return array[getRandomIntInclusive(0, array.length - 1)];
+}
+  
+/**
+ * Generates randomly generated user data using Faker.js.
+ * @returns randomly generated user data of CreateUser type.
+ */
+export function generateRandomUserDataFaker(): CreateUser {
+  // const dataFilePath = path.join(process.cwd(), './cypress/support/data/countries.json');
+  // const countries = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+
+  const FIRST_NAME = faker.person.firstName().replaceAll("'", '');
+  const LAST_NAME = faker.person.lastName().replaceAll("'", '');
+  const DOB = faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toISOString().split('T')[0];
+  const STREET = faker.location.streetAddress().substring(0, 100); // Max length 100 chars
+  const POSTCODE = faker.location.zipCode();
+  const CITY = faker.location.city();
+  const STATE = faker.location.state();
+  const COUNTRY = getRandomArrayElement(countries);
+  const PHONE = faker.phone.number({style: 'international'}).replaceAll('+', '');
+  const EMAIL = `${FIRST_NAME}.${LAST_NAME}${DOB.substring(0, 4)}@gmail.com`;
+  const PASSWORD = `${FIRST_NAME}.${LAST_NAME}**12345$%`;
+
+  return {
+    first_name: FIRST_NAME,
+    last_name: LAST_NAME,
+    address: {
+      street: STREET,
+      postal_code: POSTCODE,
+      city: CITY,
+      state: STATE,
+      country: COUNTRY,
+    },
+    dob: DOB,
+    phone: PHONE,
+    email: EMAIL.toLowerCase(),
+    password: PASSWORD,
+  };
 }
