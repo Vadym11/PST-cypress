@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["es5", "dom"],
-    "types": ["cypress", "node", "@testing-library/cypress"],
+    "lib": ["ES2021", "es5", "dom"],
+    "types": ["cypress", "node", "@testing-library/cypress", "@faker-js/faker"],
     "moduleResolution": "node",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowJs": true
+    "allowJs": true,
+    "resolveJsonModule": true,
   },
   "include": ["**/*.ts"]
 }

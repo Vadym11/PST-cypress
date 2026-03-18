@@ -1,7 +1,7 @@
 import { loadAdminCreds, urls } from "../../support/utils/project-utils"
 import { generateRandomUserData } from "../../support/utils/test-utils";
 
-describe.skip('API tests', () => {
+describe('API tests', () => {
 
     let email: string;
     let password: string;
