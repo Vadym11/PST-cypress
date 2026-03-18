@@ -3,7 +3,7 @@ import { CreateUser } from "../types/user";
 export class RegisterPage {
 
     goTo(): RegisterPage {
-        cy.visit('auth/register');
+        cy.visit('/auth/register');
 
         return this;
     }

@@ -1,6 +1,6 @@
 import { CreateUser } from '../types/user';
 import { faker } from '@faker-js/faker';
-const countries = require('../../support/data/countries.json');
+import countries from '../../support/data/countries.json';
 
 /**
  * Generates random user data for registration.
