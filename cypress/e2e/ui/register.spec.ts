@@ -1,13 +1,18 @@
 import { LoginPage } from "../../support/page-objects/LoginPage";
 import { RegisterPage } from "../../support/page-objects/RegisterPage";
+import { CreateUser } from "../../support/types/user";
 import { generateRandomUserDataFaker } from "../../support/utils/test-utils"
 
 describe('Register', () => {
 
+    let newUserData: CreateUser;
+
+    before(() => {
+        newUserData = generateRandomUserDataFaker();
+    })
+
     it('should register new user', () => {
         cy.intercept('POST', '**/api/users/register').as('registerUser');
-
-        const newUserData = generateRandomUserDataFaker();
 
         const registerPage = new RegisterPage();
 
@@ -28,6 +33,6 @@ describe('Register', () => {
         const loginPage = new LoginPage();
 
         loginPage.getPageHeader().should('have.text', 'Login');
-        cy.url().should('include', '/auth/login');
+        cy.location('pathname').should('equal', '/auth/login');
     })
 })

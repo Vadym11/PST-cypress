@@ -12,6 +12,7 @@ module.exports = defineConfig({
     adminPassword: process.env.ADMIN_USER_PASSWORD,
     userEmail: process.env.USER_EMAIL,
     userPassword: process.env.USER_PASSWORD,
+    passwordReset: process.env.FORGOT_PASSWORD,
   },
   e2e: {
     baseUrl: BASE_URL,

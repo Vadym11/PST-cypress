@@ -1,20 +1,29 @@
-import { loadAdminCreds, urls } from "../../support/utils/project-utils"
-import { generateRandomUserData } from "../../support/utils/test-utils";
+import { ApiUser } from "../../support/api-models/user-api";
+import { urls } from "../../support/utils/project-utils"
+import { generateRandomUserData, generateRandomUserDataFaker } from "../../support/utils/test-utils";
+import { getToken } from "../../support/utils/test-utils";
 
-describe('API tests', () => {
+describe('USER API tests', () => {
 
-    let email: string;
-    let password: string;
+    let adminEmail: string;
+    let adminPassword: string;
+    let adminToken: string;
+    let apiUser: ApiUser;
+    let userData: any;
     const baseUrl = urls.baseUrl;
     const apiUrl = urls.apiUrl;
 
-    before(() => {
-        loadAdminCreds().then(({ adminEmail, adminPassword }) => {
-            email = adminEmail;
-            password = adminPassword;
-            cy.log(`Admin email: ${adminEmail}`);
-            cy.log(`Admin pass: ${adminPassword}`);
-        });    
+    before(() => {    
+        apiUser = new ApiUser();
+        userData = generateRandomUserDataFaker();
+
+        cy.getAdminCreds().then(({ email, password }) => {
+            adminEmail = email;
+            adminPassword = password;
+            getToken(email, password).then((token) => {
+                adminToken = token;
+            });
+        });
     })
 
     it('Get products', () => {
@@ -34,7 +43,7 @@ describe('API tests', () => {
             cy.request({
                 method: 'POST',
                 url: `${apiUrl}/users/login`,
-                body: { email, password }
+                body: { email: adminEmail, password: adminPassword }
             }).then((res) => {
 
                 const adminToken = res.body.access_token;

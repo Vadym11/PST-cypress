@@ -24,3 +24,9 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 import '@testing-library/cypress/add-commands';
+
+Cypress.Commands.add('getAdminCreds', () => {
+  cy.env(['adminEmail', 'adminPassword']).then(({adminEmail, adminPassword}) => {
+    cy.wrap({ email: adminEmail, password: adminPassword });
+  });
+});
