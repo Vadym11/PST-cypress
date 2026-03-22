@@ -14,7 +14,7 @@ function getUrls() {
 
     if (baseUrl.endsWith('4200')) {
       apiUrl = baseUrl.slice(0, baseUrl.length - 4) + '8091';
-    } else if (baseUrl.endsWith('8080')) {
+    } else if (baseUrl.endsWith('80')) {
       apiUrl = `${baseUrl}/api`;
     } else {
       apiUrl = 'https://api.practicesoftwaretesting.com';
