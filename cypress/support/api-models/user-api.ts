@@ -71,10 +71,11 @@ export class ApiUser {
         );
     }
 
-    getById(userId: string, token: string): Cypress.Chainable<Cypress.Response<GetAllUsersResponse>> {
+    getById(userId: string, token: string, failOnStatus: boolean = true): Cypress.Chainable<Cypress.Response<GetAllUsersResponse>> {
         return this.apiHandler.get(
             `/users/${userId}`,
-            token
+            token,
+            failOnStatus
         );
     }
 
@@ -101,7 +102,7 @@ export class ApiUser {
         );
     }
 
-    deleteUser(userId: number, token: string): Cypress.Chainable<Cypress.Response<number>> {
+    deleteUser(userId: string, token: string): Cypress.Chainable<Cypress.Response<number>> {
         return this.apiHandler.delete(
             `/users/${userId}`,
             token

@@ -4,32 +4,60 @@ import { generateRandomUserDataFaker } from "../../support/utils/test-utils";
 import { faker } from "@faker-js/faker";
 
 describe('User API Tests', () => {
-
-    let newPasswordReset: string;
-    let newPasswordChanged: string;
+    const apiUser: ApiUser = new ApiUser();
     const newFirstName = faker.person.firstName().replaceAll("'", '');
     const newLastName = faker.person.lastName().replaceAll("'", '');
-    const newEmail = `${newFirstName}.${newLastName}@gmail.com`.toLowerCase();
+    const newEmail = `${newFirstName}.${newLastName}.${Date.now()}@gmail.com`.toLowerCase();
+    const newPasswordChanged = `Ab1&${Date.now()}${faker.string.alphanumeric(6)}`;
     let adminToken: string;
-    let apiUser: ApiUser;
-    let userData: CreateUser;
     let userToken: string;
+    let originalUserData: CreateUser;
+    let currentUserData: CreateUser;
     let userId: string;
-
+    let newPasswordReset: string;
+    
     before(() => {    
-        apiUser = new ApiUser();
-        userData = generateRandomUserDataFaker();
+        originalUserData = generateRandomUserDataFaker();
+        currentUserData = { ...originalUserData };
 
-        cy.getAdminCreds().then(({ email, password }) => {
-            apiUser.loginUser(email, password).then((response) => {
-                adminToken = response.body.access_token;
-            });
-        });
-
-        cy.env(['passwordReset']).then(({passwordReset}) => {
+        return cy.env(['passwordReset']).then(({passwordReset}) => {
             newPasswordReset = passwordReset;
+            return cy.getAdminCreds();
+        }).then(({ email, password }) => {
+            return apiUser.loginUser(email, password);
+        })
+        .then((res) => {
+            expect(res.status).to.eq(200);
+            adminToken = res.body.access_token;
+            return apiUser.registerUser(originalUserData);
+        })
+        .then((res) => {
+            expect(res.status).to.eq(201);
+            userId = res.body.id;
+            return apiUser.loginUser(originalUserData.email, originalUserData.password);
+        })
+        .then((res) => {
+            expect(res.status).to.eq(200);
+            userToken = res.body.access_token;
         });
-    })
+    });
+
+    beforeEach(() => {
+        return apiUser.loginUser(currentUserData.email, currentUserData.password).then((res) => {
+            expect(res.status).to.eq(200);
+            userToken = res.body.access_token;
+        });
+    });
+
+    after(() => {
+        return apiUser.deleteUser(userId, adminToken).then((res) => {
+            expect(res.status).to.eq(204);
+            return apiUser.getById(userId, adminToken, false);
+        }).then((res) => {
+            expect(res.status).to.eq(404);
+            expect(res.body).to.have.property('error', `No query results for model [App\\Models\\User] ${userId}`);
+        });
+    });
 
     it('should get all users', () => {
         apiUser.getAllUsers(adminToken).then((res) => {
@@ -38,71 +66,38 @@ describe('User API Tests', () => {
         });
     });
 
-    it('should register new user', () => {
-        apiUser.registerUser(userData).then((res) => {
-            expect(res.status).to.eq(201);
-            expect(res.body).to.include({
-                email: userData.email,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
-            });
-        });
-    });
-
-    it('should login user', () => {
-        apiUser.loginUser(userData.email, userData.password).then((res) => {
-            expect(res.status).to.eq(200);
-            expect(res.body).to.have.property('access_token');
-            userToken = res.body.access_token;
-        });
-    });
-
-    it('should change user password', () => {   
-        newPasswordChanged = faker.internet.password({ length: 12, memorable: false, pattern: /[A-Za-z0-9!@#$%^&*()]/ });
-        cy.log('newPasswordReset value: ' + newPasswordReset); 
-        cy.log('userToken: ' + userToken);
-
-        apiUser.changePassword(userData.password, newPasswordChanged, userToken).then((res) => {
-            expect(res.status).to.eq(200);
-            expect(res.body).to.have.property('success', true);
-        });
-    });
-
-    it('should login user with changed password', () => {
-        apiUser.loginUser(userData.email, newPasswordChanged).then((res) => {
-            expect(res.status).to.eq(200);
-            expect(res.body).to.have.property('access_token');
-            userToken = res.body.access_token;
-        });
-    });
-
-    it('should get current user data', () => {
+    it('should get current user info', () => {
         apiUser.getCurrentUser(userToken).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.include({
-                email: userData.email,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
+                email: currentUserData.email,
+                first_name: currentUserData.first_name,
+                last_name: currentUserData.last_name,
             });
-            userId = res.body.id;
         });
     });
 
-    it('should reset forgotten password', () => {
-        apiUser.forgotPassword(userData.email).then((res) => {
+    it('should change user password and login', () => {   
+        apiUser.changePassword(currentUserData.password, newPasswordChanged, userToken).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('success', true);
-        });
-
-        cy.log(`New password for user ${userData.email}: ${newPasswordReset}`);
-    });
-
-    it('should login user with new password', () => {
-        apiUser.loginUser(userData.email, newPasswordReset).then((res) => {
+            return apiUser.loginUser(currentUserData.email, newPasswordChanged);
+        }).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('access_token');
-            userToken = res.body.access_token;
-            cy.log(`Token after password reset: ${userToken}`);
+            currentUserData.password = newPasswordChanged;
+        });
+    });
+
+    it('should reset forgotten password and login', () => {
+        apiUser.forgotPassword(currentUserData.email).then((res) => {
+            expect(res.status).to.eq(200);
+            expect(res.body).to.have.property('success', true);
+            return apiUser.loginUser(currentUserData.email, newPasswordReset);
+        }).then((res) => {
+            expect(res.status).to.eq(200);
+            expect(res.body).to.have.property('access_token');
+            currentUserData.password = newPasswordReset;
         });
     });
 
@@ -112,7 +107,6 @@ describe('User API Tests', () => {
             expect(res.body).to.have.property('access_token');
             expect(res.body).to.have.property('expires_in');
             expect(res.body).to.have.property('token_type', 'bearer');
-            userToken = res.body.access_token;
         });
     });
 
@@ -120,29 +114,44 @@ describe('User API Tests', () => {
         apiUser.getById(userId, userToken).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.include({
-                email: userData.email,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
+                email: currentUserData.email,
+                first_name: currentUserData.first_name,
+                last_name: currentUserData.last_name,
             });
         });
     });
 
     it('should update user info', () => {
-        userData.first_name = newFirstName;
-        userData.last_name = newLastName;
+        currentUserData.first_name = newFirstName;
+        currentUserData.last_name = newLastName;
 
-        apiUser.updateInfo(userId, userData, userToken).then((res) => {
+        apiUser.updateInfo(userId, currentUserData, userToken).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('success', true);
+            return apiUser.getCurrentUser(userToken);
+        }).then((res) => {
+            expect(res.status).to.eq(200);
+            expect(res.body).to.include({
+                email: currentUserData.email,
+                first_name: currentUserData.first_name,
+                last_name: currentUserData.last_name,
+            });
         });
     });
 
     it('should partially update user info', () => {
-        const updatedData = { email: newEmail};
-
-        apiUser.partiallyUpdateInfo(userId, updatedData, userToken).then((res) => {
+        apiUser.partiallyUpdateInfo(userId, {email: newEmail}, userToken).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('success', true);
+            return apiUser.getCurrentUser(userToken);
+        }).then((res) => {
+            expect(res.status).to.eq(200);
+            expect(res.body).to.include({
+                email: newEmail,
+                first_name: currentUserData.first_name,
+                last_name: currentUserData.last_name,
+            });
+            currentUserData.email = newEmail;
         });
     });
 
