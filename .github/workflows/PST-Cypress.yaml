@@ -13,6 +13,7 @@ jobs:
     env:
       K8S_NAMESPACE: toolshop-ci-${{ github.run_id }}
       REGISTRY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/toolshop
+      BASE_URL: http://localhost:8080
 
     steps:
       - name: Checkout
