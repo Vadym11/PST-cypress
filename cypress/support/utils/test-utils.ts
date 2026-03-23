@@ -1,6 +1,7 @@
 import { CreateUser } from '../types/user';
 import { faker } from '@faker-js/faker';
 import countries from '../../support/data/countries.json';
+import { urls } from './project-utils';
 
 /**
  * Generates random user data for registration.
@@ -100,4 +101,14 @@ export function generateRandomUserDataFaker(): CreateUser {
     email: EMAIL.toLowerCase(),
     password: PASSWORD,
   };
+}
+
+export function getToken(email: string, password: string): Cypress.Chainable<string> {
+  return cy.request({
+    method: 'POST',
+    url: `${urls.apiUrl}/users/login`,
+    body: { email: email, password: password }
+  }).then((res) => {
+    return res.body.access_token;
+  });
 }

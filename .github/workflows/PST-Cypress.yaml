@@ -70,7 +70,9 @@ jobs:
             --from-literal=ADMIN_USER_EMAIL="${{ secrets.ADMIN_USER_EMAIL }}" \
             --from-literal=ADMIN_USER_PASSWORD="${{ secrets.ADMIN_USER_PASSWORD }}" \
             --from-literal=USER_EMAIL="${{ secrets.USER_EMAIL }}" \
-            --from-literal=USER_PASSWORD="${{ secrets.USER_PASSWORD }}"
+            --from-literal=USER_PASSWORD="${{ secrets.USER_PASSWORD }}" \
+            --from-literal=FORGOT_PASSWORD="${{ secrets.FORGOT_PASSWORD }}"
+
 
       - name: Apply DB secrets
         run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-db-secret.yaml

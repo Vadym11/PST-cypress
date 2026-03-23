@@ -12,6 +12,7 @@ module.exports = defineConfig({
     adminPassword: process.env.ADMIN_USER_PASSWORD,
     userEmail: process.env.USER_EMAIL,
     userPassword: process.env.USER_PASSWORD,
+    passwordReset: process.env.FORGOT_PASSWORD,
   },
   e2e: {
     baseUrl: BASE_URL,
@@ -25,6 +26,12 @@ module.exports = defineConfig({
           launchOptions.args.push('--disable-gpu');
         }
         return launchOptions;
+      });
+      on('task', {
+        log(message) {
+          console.log(message);
+          return null;
+        }
       });
     },
     specPattern: 'cypress/e2e/**/*.{cy,spec}.{js,jsx,ts,tsx}'
