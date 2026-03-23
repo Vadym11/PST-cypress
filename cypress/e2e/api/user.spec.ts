@@ -44,8 +44,10 @@ describe('User API Tests', () => {
 
     beforeEach(() => {
         return apiUser.loginUser(currentUserData.email, currentUserData.password).then((res) => {
+            cy.task('------- Logs from beforeEach -------');
             cy.task('log', `Email: ${currentUserData.email} | Password: ${currentUserData.password}`);
             cy.task('log', `Status: ${res.status}`);
+            cy.task('------- End of logs from beforeEach -------');
             expect(res.status).to.eq(200);
             userToken = res.body.access_token;
         });
@@ -93,9 +95,15 @@ describe('User API Tests', () => {
     });
 
     it('should reset forgotten password and login', () => {
+        cy.task('log', `Password before resetting: ${currentUserData.password}`);
         return apiUser.forgotPassword(currentUserData.email).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('success', true);
+            cy.task('log', `Logging in with reset password: ${newPasswordReset}`);
+            apiUser.getCurrentUser(userToken).then((res) => {
+                expect(res.status).to.eq(200);
+                cy.task('log', `Current user: ${res.body}`);
+            });
             return apiUser.loginUser(currentUserData.email, newPasswordReset);
         }).then((res) => {
             expect(res.status).to.eq(200);
