@@ -5,6 +5,7 @@ const { spawn } = require("child_process");
 
 const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK_URL;
 const TEST_NAME = process.env.TEST_NAME || "Cypress test run";
+const BASE_URL = process.env.BASE_URL;
 
 function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -77,6 +78,7 @@ async function sendSlackNotification({ exitCode, durationMs }) {
   console.log("Starting Cypress test run...");
   console.log("TEST_NAME:", TEST_NAME);
   console.log("SLACK_WEBHOOK set:", Boolean(SLACK_WEBHOOK));
+  console.log("BASE_URL:", BASE_URL);
 
   const start = Date.now();
   const proc = spawn(

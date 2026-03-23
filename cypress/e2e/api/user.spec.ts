@@ -78,7 +78,7 @@ describe('User API Tests', () => {
     });
 
     it('should change user password and login', () => {   
-        apiUser.changePassword(currentUserData.password, newPasswordChanged, userToken).then((res) => {
+        return apiUser.changePassword(currentUserData.password, newPasswordChanged, userToken).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('success', true);
             return apiUser.loginUser(currentUserData.email, newPasswordChanged);
@@ -90,7 +90,7 @@ describe('User API Tests', () => {
     });
 
     it('should reset forgotten password and login', () => {
-        apiUser.forgotPassword(currentUserData.email).then((res) => {
+        return apiUser.forgotPassword(currentUserData.email).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('success', true);
             return apiUser.loginUser(currentUserData.email, newPasswordReset);
