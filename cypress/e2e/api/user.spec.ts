@@ -44,24 +44,20 @@ describe('User API Tests', () => {
 
     beforeEach(() => {
         return apiUser.loginUser(currentUserData.email, currentUserData.password).then((res) => {
-            cy.task('log', '------- Logs from beforeEach -------');
-            cy.task('log', `Email: ${currentUserData.email} | Password: ${currentUserData.password}`);
-            cy.task('log', `Status: ${res.status}`);
-            cy.task('log', '------- End of logs from beforeEach -------');
             expect(res.status).to.eq(200);
             userToken = res.body.access_token;
         });
     });
 
-    // after(() => {
-    //     return apiUser.deleteUser(userId, adminToken).then((res) => {
-    //         expect(res.status).to.eq(204);
-    //         return apiUser.getById(userId, adminToken, false);
-    //     }).then((res) => {
-    //         expect(res.status).to.eq(404);
-    //         expect(res.body).to.have.property('error', `No query results for model [App\\Models\\User] ${userId}`);
-    //     });
-    // });
+    after(() => {
+        return apiUser.deleteUser(userId, adminToken).then((res) => {
+            expect(res.status).to.eq(204);
+            return apiUser.getById(userId, adminToken, false);
+        }).then((res) => {
+            expect(res.status).to.eq(404);
+            expect(res.body).to.have.property('error', `No query results for model [App\\Models\\User] ${userId}`);
+        });
+    });
 
     it('should get all users', () => {
         apiUser.getAllUsers(adminToken).then((res) => {
@@ -95,21 +91,17 @@ describe('User API Tests', () => {
     });
 
     it('should reset forgotten password and login', () => {
-        cy.task('log', `Password before resetting: ${currentUserData.password}`);
         return apiUser.forgotPassword(currentUserData.email).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('success', true);
-            cy.task('log', `Logging in with reset password: ${newPasswordReset}`);
             apiUser.getCurrentUser(userToken).then((res) => {
                 expect(res.status).to.eq(200);
-                cy.task('log', `Current user: ${res.body}`);
             });
             return apiUser.loginUser(currentUserData.email, newPasswordReset);
         }).then((res) => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('access_token');
             currentUserData.password = newPasswordReset;
-            cy.task('log', `Password reset to: ${currentUserData.password}`);
         });
     });
 
