@@ -44,6 +44,9 @@ describe('User API Tests', () => {
 
     beforeEach(() => {
         return apiUser.loginUser(currentUserData.email, currentUserData.password).then((res) => {
+            console.log(`Logging in with email: ${currentUserData.email} and password: ${currentUserData.password}`);
+            console.log(`Login response status: ${res.status}`);
+            console.log(`Login response body: ${JSON.stringify(res.body)}`);
             expect(res.status).to.eq(200);
             userToken = res.body.access_token;
         });
@@ -86,6 +89,7 @@ describe('User API Tests', () => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('access_token');
             currentUserData.password = newPasswordChanged;
+            console.log(`Password changed to: ${currentUserData.password}`);
         });
     });
 
@@ -98,6 +102,7 @@ describe('User API Tests', () => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('access_token');
             currentUserData.password = newPasswordReset;
+            console.log(`Password reset to: ${currentUserData.password}`);
         });
     });
 
