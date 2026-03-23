@@ -27,6 +27,12 @@ module.exports = defineConfig({
         }
         return launchOptions;
       });
+      on('task', {
+        log(message) {
+          console.log(message);
+          return null;
+        }
+      });
     },
     specPattern: 'cypress/e2e/**/*.{cy,spec}.{js,jsx,ts,tsx}'
   },
