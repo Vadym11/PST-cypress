@@ -44,10 +44,10 @@ describe('User API Tests', () => {
 
     beforeEach(() => {
         return apiUser.loginUser(currentUserData.email, currentUserData.password).then((res) => {
-            cy.task('------- Logs from beforeEach -------');
+            cy.task('log', '------- Logs from beforeEach -------');
             cy.task('log', `Email: ${currentUserData.email} | Password: ${currentUserData.password}`);
             cy.task('log', `Status: ${res.status}`);
-            cy.task('------- End of logs from beforeEach -------');
+            cy.task('log', '------- End of logs from beforeEach -------');
             expect(res.status).to.eq(200);
             userToken = res.body.access_token;
         });
