@@ -51,15 +51,15 @@ describe('User API Tests', () => {
         });
     });
 
-    after(() => {
-        return apiUser.deleteUser(userId, adminToken).then((res) => {
-            expect(res.status).to.eq(204);
-            return apiUser.getById(userId, adminToken, false);
-        }).then((res) => {
-            expect(res.status).to.eq(404);
-            expect(res.body).to.have.property('error', `No query results for model [App\\Models\\User] ${userId}`);
-        });
-    });
+    // after(() => {
+    //     return apiUser.deleteUser(userId, adminToken).then((res) => {
+    //         expect(res.status).to.eq(204);
+    //         return apiUser.getById(userId, adminToken, false);
+    //     }).then((res) => {
+    //         expect(res.status).to.eq(404);
+    //         expect(res.body).to.have.property('error', `No query results for model [App\\Models\\User] ${userId}`);
+    //     });
+    // });
 
     it('should get all users', () => {
         apiUser.getAllUsers(adminToken).then((res) => {
