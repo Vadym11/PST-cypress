@@ -1,4 +1,5 @@
 import { CreateUser } from '../types/user';
+import { ProductRequest } from '../types/product';
 import { faker } from '@faker-js/faker';
 import countries from '../../support/data/countries.json';
 import { urls } from './project-utils';
@@ -111,4 +112,25 @@ export function getToken(email: string, password: string): Cypress.Chainable<str
   }).then((res) => {
     return res.body.access_token;
   });
+}
+
+export function generateRandomProductDataFaker(relatedIds: {
+  categoryId: string;
+  brandId: string;
+  productImageId: string;
+}): ProductRequest {
+  const NAME = `${faker.commerce.productAdjective()} ${faker.commerce.productMaterial()} Tool ${Date.now()}`;
+  const DESCRIPTION = faker.commerce.productDescription().substring(0, 240);
+
+  return {
+    name: NAME,
+    description: DESCRIPTION,
+    price: Number(faker.commerce.price({ min: 5, max: 500, dec: 2 })),
+    category_id: relatedIds.categoryId,
+    brand_id: relatedIds.brandId,
+    product_image_id: relatedIds.productImageId,
+    is_location_offer: faker.datatype.boolean(),
+    is_rental: faker.datatype.boolean(),
+    co2_rating: faker.helpers.arrayElement(['A', 'B', 'C', 'D', 'E']),
+  };
 }

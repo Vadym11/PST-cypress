@@ -86,7 +86,6 @@ describe('User API Tests', () => {
             expect(res.status).to.eq(200);
             expect(res.body).to.have.property('access_token');
             currentUserData.password = newPasswordChanged;
-            cy.task('log', `Password changed to: ${currentUserData.password}`);
         });
     });
 
