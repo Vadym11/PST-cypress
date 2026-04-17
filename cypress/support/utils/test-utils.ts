@@ -2,6 +2,7 @@ import { CreateUser } from '../types/user';
 import { ProductRequest } from '../types/product';
 import { faker } from '@faker-js/faker';
 import countries from '../../support/data/countries.json';
+import users from '../../support/data/user-data.json'
 import { urls } from './project-utils';
 
 /**
@@ -9,19 +10,18 @@ import { urls } from './project-utils';
  * User data is sourced from predefined arrays in registerUserData.json.
  * @returns A User object with random data.
  */
-export function generateRandomUserData(userData) {
-
+export function generateRandomUserData(): CreateUser {
   const randomNumber = getRandomIntInclusive(0, 9999);
 
-  const FIRST_NAME = getRandomArrayElement(userData.firstNames);
-  const LAST_NAME = getRandomArrayElement(userData.lastNames);
-  const DOB = getRandomArrayElement(userData.dob);
-  const STREET = getRandomArrayElement(userData.streets);
-  const POSTCODE = getRandomArrayElement(userData.postcodes);
-  const CITY = getRandomArrayElement(userData.cities);
-  const STATE = getRandomArrayElement(userData.states);
-  const COUNTRY = getRandomArrayElement(userData.countries);
-  const PHONE = getRandomArrayElement(userData.phones);
+  const FIRST_NAME = getRandomArrayElement(users.firstNames);
+  const LAST_NAME = getRandomArrayElement(users.lastNames);
+  const DOB = getRandomArrayElement(users.dob);
+  const STREET = getRandomArrayElement(users.streets);
+  const POSTCODE = getRandomArrayElement(users.postcodes);
+  const CITY = getRandomArrayElement(users.cities);
+  const STATE = getRandomArrayElement(users.states);
+  const COUNTRY = getRandomArrayElement(users.countries);
+  const PHONE = getRandomArrayElement(users.phones);
   const EMAIL = `${FIRST_NAME}.${LAST_NAME}${randomNumber}@gmail.com`;
   const PASSWORD = `${FIRST_NAME}.${LAST_NAME}**12345$%`;
 

@@ -9,7 +9,7 @@ export function loadAdminCreds() {
 }
 
 function getUrls() {
-    const baseUrl = Cypress.config().baseUrl;
+    const baseUrl = Cypress.config().baseUrl || '';
     let apiUrl: string;
 
     if (baseUrl.endsWith('4200')) {
