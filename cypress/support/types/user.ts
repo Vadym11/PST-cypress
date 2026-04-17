@@ -18,7 +18,7 @@ export interface Address {
   postal_code: string;
 }
 
-export interface GetAllUsersResponse extends BaseUser {
+export interface UserResponse extends BaseUser {
   provider: null;
   id: string;
   enabled: boolean;

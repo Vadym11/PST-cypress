@@ -63,7 +63,7 @@ export class ApiProduct {
         );
     }
 
-    deleteProduct(productId: string, token: string): Cypress.Chainable<Cypress.Response<number>> {
+    deleteProduct(productId: string, token: string): Cypress.Chainable<Cypress.Response<void>> {
         return this.apiHandler.delete(
             `/products/${productId}`,
             token
