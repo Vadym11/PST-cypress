@@ -13,7 +13,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: cypress
-          image: europe-west1-docker.pkg.dev/project-2e1e6c1d-528d-4a3a-803/toolshop/cypress-k8s:latest
+          image: europe-west1-docker.pkg.dev/project-c08bd28e-4c9b-4e57-9da/toolshop/cypress-k8s:latest
           resources:
             requests:
               cpu: "1000m"
