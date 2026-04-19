@@ -1,5 +1,6 @@
 import { Languages } from "../types/languages";
 import { ToolCategories } from "../types/tool-categories";
+import { LoginPage } from "./LoginPage";
 
 export class Header {
 
@@ -8,6 +9,7 @@ export class Header {
   private readonly contactsTestId = 'nav-contact';
   private readonly signinTestId = 'nav-sign-in';
   private readonly languageSelectTestId = 'language-select';
+  private readonly cartTestId = 'nav-cart';
 
   private byTestId(testId: string) {
     return cy.findByTestId(testId);
@@ -49,8 +51,10 @@ export class Header {
     this.contactsLink().click();
   }
 
-  clickSignIn() {
+  clickSignIn(): LoginPage {
     this.signinLink().click();
+
+    return new LoginPage();
   }
 
   openLanguageDropdown() {
@@ -65,5 +69,9 @@ export class Header {
   selectToolsCategory(category: ToolCategories) {
     this.clickCategoriesDropDown();
     this.activeDropdownMenu().contains(category).click();
+  }
+
+  clickCart() {
+    this.byTestId(this.cartTestId).click();
   }
 }

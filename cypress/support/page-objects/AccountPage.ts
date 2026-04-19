@@ -1,8 +1,9 @@
-export class AccountPage {
+import { BasePage } from "./BasePage";
+export class AccountPage extends BasePage {
 
     private readonly navButtonsSelector = '.btn-group-vertical > a';
     private readonly titleSelector = 'h1';
-    private readonly infoMessageSelector = 'h1 + p';  // or however it's structured
+    private readonly infoMessageSelector = 'h1 + p';
 
     private navButtons() {
         return cy.get(this.navButtonsSelector);
