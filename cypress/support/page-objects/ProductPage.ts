@@ -20,14 +20,15 @@ export class ProductPage extends BasePage {
     }
 
     getAddedToCartPopUp(): Cypress.Chainable<JQuery<HTMLElement>> {
-        return cy.findByRole('alert', { name: 'Product added to shopping cart.' }).last();
+        return cy.findAllByRole('alert', { name: 'Product added to shopping cart.' });
     }
 
     clickAddToCartAndAssertPopUps(count: number = 1): ProductPage {
         for (let i = 0; i < count; i++) {
             this.clickAddToCart();
-
-           this.getAddedToCartPopUp().should('be.visible');
+            this.getAddedToCartPopUp()
+                .last()
+                .should('be.visible');
         }
 
         return this;

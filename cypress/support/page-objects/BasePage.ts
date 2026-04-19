@@ -6,7 +6,5 @@ export class BasePage {
 
     goToHomePage() {
         cy.visit('/');
-
-        return new HomePage();
-    }
+        }
 }

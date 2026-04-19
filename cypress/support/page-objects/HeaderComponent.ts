@@ -1,5 +1,6 @@
 import { Languages } from "../types/languages";
 import { ToolCategories } from "../types/tool-categories";
+import { HomePage } from "./HomePage";
 import { LoginPage } from "./LoginPage";
 
 export class Header {
@@ -39,8 +40,9 @@ export class Header {
     return cy.get('.dropdown-menu.show');
   }
 
-  clickHomePage() {
+  clickHomePage(): HomePage {
     this.homePageLink().click();
+    return new HomePage();
   }
 
   clickCategoriesDropDown() {
@@ -72,6 +74,8 @@ export class Header {
   }
 
   clickCart() {
-    this.byTestId(this.cartTestId).click();
+    // using force click since the cart icon is covered by the pop-up when a product
+    // is added to the cart, which causes the test to fail intermittently
+    this.byTestId(this.cartTestId).click({force: true});
   }
 }

@@ -22,7 +22,9 @@ export class CartBillingAddressPage extends CartBasePage {
     }
 
     clickProceedToPayment(): CartPaymentPage {
-        cy.findByTestId(this.proceedToPaymentButtonTestId).click();
+        // using force click since the cart icon is covered by the pop-up when a product
+        // is added to the cart, which causes the test to fail intermittently
+        cy.findByTestId(this.proceedToPaymentButtonTestId).click({force: true});
 
         return new CartPaymentPage();
     }

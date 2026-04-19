@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { ApiUser } from "../../support/api-models/user-api";
 import { HomePage } from "../../support/page-objects/HomePage";
 import { CreateUser } from "../../support/types/user";
@@ -5,6 +6,7 @@ import { generateRandomUserDataFaker } from "../../support/utils/test-utils";
 
 describe('Product purchase flow', () => {
 
+    let quantity: number;
     let user: CreateUser;
     let guestUser: CreateUser;
     const homePage = new HomePage();
@@ -26,11 +28,15 @@ describe('Product purchase flow', () => {
         });
     });
 
+    beforeEach(() => {
+        quantity = faker.number.int({ min: 1, max: 10 });
+    });
+
     it('should allow a user to purchase a product as a guest', () => {
         const cartPaymentPage =  homePage
-            .goToHomePage()
-            .clickFirstProduct()
-            .clickAddToCartAndAssertPopUps(3)
+            .goTo()
+            .selectRandomProduct()
+            .clickAddToCartAndAssertPopUps(quantity)
             .goToCart()
             .clickProceedToCheckout()
             .switchToContinueAsGuest()
@@ -56,9 +62,9 @@ describe('Product purchase flow', () => {
 
     it('should allow a user to purchase a product as a registered user (signed out)', () => {
         const cartPaymentPage =  homePage
-            .goToHomePage()
-            .clickFirstProduct()
-            .clickAddToCartAndAssertPopUps()
+            .goTo()
+            .selectRandomProduct()
+            .clickAddToCartAndAssertPopUps(quantity)
             .goToCart()
             .clickProceedToCheckout()
             .login(user.email, user.password)
@@ -79,12 +85,12 @@ describe('Product purchase flow', () => {
 
     it('should allow a user to purchase a product as a registered user (signed in)', () => {
         const cartPaymentPage = homePage
-            .goToHomePage().header
+            .goTo().header
             .clickSignIn()
             .login(user.email, user.password)
-            .goToHomePage()
-            .clickFirstProduct()
-            .clickAddToCartAndAssertPopUps()
+            .header.clickHomePage()
+            .selectRandomProduct()
+            .clickAddToCartAndAssertPopUps(quantity)
             .goToCart()
             .clickProceedToCheckout()
             .clickProceedToBilling()

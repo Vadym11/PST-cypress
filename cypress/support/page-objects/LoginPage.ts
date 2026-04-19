@@ -1,6 +1,13 @@
 import { AccountPage } from "./AccountPage";
+import { Header } from "./HeaderComponent";
 
 export class LoginPage {
+    
+    private readonly header: Header;
+
+    constructor() {
+        this.header = new Header();
+    }
 
     goTo(): LoginPage {
         cy.visit('/auth/login');
