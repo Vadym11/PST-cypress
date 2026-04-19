@@ -1,15 +1,16 @@
 import { AccountPage } from "./AccountPage";
+import { Header } from "./HeaderComponent";
 
 export class LoginPage {
+    
+    private readonly header: Header;
+
+    constructor() {
+        this.header = new Header();
+    }
 
     goTo(): LoginPage {
-        cy.log('Navigating to login page');
-        cy.visit('/auth/login', {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept-Language': 'en-US,en;q=0.9',
-            }
-        });
+        cy.visit('/auth/login');
 
         return this;
     }
@@ -34,6 +35,9 @@ export class LoginPage {
         this.fillEmail(email);
         this.fillPassword(password);
         this.submit();
+
+        // Wait for the account page header to be visible to ensure the page has loaded
+        cy.findByRole('heading', { name: 'My account' }).should('be.visible');
 
         return new AccountPage();
     }
