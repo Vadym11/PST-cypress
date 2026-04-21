@@ -67,7 +67,7 @@ describe('Product purchase flow', () => {
             .clickAddToCartAndAssertPopUps(quantity)
             .goToCart()
             .clickProceedToCheckout()
-            .login(user.email, user.password)
+            .login(user)
             .clickProceedToBilling()
             .clickProceedToPayment()
             .selectCashOnDelivery()

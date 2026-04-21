@@ -1,3 +1,4 @@
+import { CreateUser } from "../../types/user";
 import { CartBasePage } from "./CartBaseBage";
 import { CartBillingAddressPage } from "./CartBillingAddressPage";
 
@@ -23,11 +24,15 @@ export class CartSignInPage extends CartBasePage {
     clickLogin(): void {
         cy.findByTestId(this.logInButtonTestId).click();
     }
-
-    login(email: string, password: string): CartSignInPage {
-        this.fillEmail(email);
-        this.fillPassword(password);
+    
+    login(user: CreateUser): CartSignInPage {
+        const helloMessage = 
+            `Hello ${user.first_name} ${user.last_name}, you are already logged in. You can proceed to checkout.`;
+        
+        this.fillEmail(user.email);
+        this.fillPassword(user.password);
         this.clickLogin();
+        cy.contains(helloMessage).should('be.visible');
 
         return this;
     }

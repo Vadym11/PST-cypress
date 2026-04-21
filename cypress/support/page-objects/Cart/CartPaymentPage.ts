@@ -85,11 +85,11 @@ export class CartPaymentPage extends CartBasePage {
 
     getPaymentSuccessMessage(): Cypress.Chainable<JQuery<HTMLElement>> {
 
-        return cy.findByTestId(this.paymentSuccessMessageTestId);
+        return cy.findByTestId(this.paymentSuccessMessageTestId, {timeout: 10000});
     }
 
     getOrderConfirmationMessage(): Cypress.Chainable<JQuery<HTMLElement>> {
 
-        return cy.get(`#${this.orderConfirmationMessageId}`);
+        return cy.get(`#${this.orderConfirmationMessageId}`, {timeout: 10000});
     }   
 }

@@ -21,35 +21,45 @@ export class HomePage extends BasePage{
     clickRandomPage(): HomePage {
         const randomPage = faker.number.int({min: 1, max: 5});
 
+        cy.intercept('GET', '**/products**').as('productsReload');
+
         if (randomPage != 1) {
             cy.get(`[aria-label="Page-${randomPage}"]`).click();
-            cy.get(`[aria-label="Page-${randomPage}"]`).parent().should('have.class', 'active');
+        } else {
+            cy.reload();
         }
+
+        cy.wait('@productsReload');
+        cy.get(`[aria-label="Page-${randomPage}"]`).parent().should('have.class', 'active');
 
         return this;
     }
 
     clickRandomProduct(): ProductPage {
-        cy.get('.card')
-            .not(':has([data-testid="out-of-stock"])')
-            .filter(':not(:contains("Thor Hammer"))')
-            .then(($elements) => {
-                if ($elements.length === 0) {
-                    throw new Error('No available products found matching criteria.');
-                }
+        const filterProductSelectors = () => {
+            return cy.get('.card')
+                        .not(':has([data-test="out-of-stock"])')
+                        .filter(':not(:contains("Thor Hammer"))');
+        }
 
-                const randomIndex = Math.floor(Math.random() * $elements.length);
+        filterProductSelectors()
+        .then(($elements) => {
+            if ($elements.length === 0) {
+                throw new Error('No available products found matching criteria.');
+            }
+            const randomIndex = Math.floor(Math.random() * $elements.length);
 
-                cy.wrap($elements).eq(randomIndex).click();
-            });
+            // Re-query fresh instead of using the stale wrapped reference
+            filterProductSelectors()
+                .eq(randomIndex)
+                .click();
+        });
 
         return new ProductPage(); 
     }
 
     selectRandomProduct(): ProductPage {
         this.clickRandomPage();
-        // Wait for products to load after pagination
-        cy.wait(500);
 
         return this.clickRandomProduct();
     }

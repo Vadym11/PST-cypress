@@ -17,8 +17,10 @@ module.exports = defineConfig({
   e2e: {
     baseUrl: BASE_URL,
     video: process.env.CYPRESS_VIDEO === 'true',
-    numTestsKeptInMemory: 0,
     setupNodeEvents(on, config) {
+      // Keep snapshots in interactive mode (`cypress open`) and
+      // optimize memory in terminal mode (`cypress run`).
+      config.numTestsKeptInMemory = config.isTextTerminal ? 0 : 50;
       on('before:browser:launch', (browser, launchOptions) => {
         if (browser.name === 'chrome') {
           launchOptions.args.push('--disable-dev-shm-usage');
@@ -33,6 +35,8 @@ module.exports = defineConfig({
           return null;
         }
       });
+
+      return config;
     },
     specPattern: 'cypress/e2e/**/*.{cy,spec}.{js,jsx,ts,tsx}'
   },

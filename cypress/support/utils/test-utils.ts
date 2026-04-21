@@ -82,7 +82,7 @@ export function generateRandomUserDataFaker(): CreateUser {
   const POSTCODE = faker.location.zipCode();
   const CITY = faker.location.city();
   const STATE = faker.location.state();
-  const COUNTRY = getRandomArrayElement(countries);
+  const COUNTRY = getRandomArrayElement(countries).substring(0, 40); // Max length 40 chars
   const PHONE = faker.phone.number({style: 'international'}).replaceAll('+', '');
   const EMAIL = `${FIRST_NAME}.${LAST_NAME}${DOB.substring(0, 4)}@gmail.com`;
   const PASSWORD = `${FIRST_NAME}.${LAST_NAME}**12345$%`;
