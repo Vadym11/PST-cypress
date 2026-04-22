@@ -63,4 +63,20 @@ export class HomePage extends BasePage{
 
         return this.clickRandomProduct();
     }
+
+    search(term: string): HomePage {
+        cy.intercept('GET', '**/products/search**').as('searchResults');
+        cy.findByTestId('search-query').clear().type(term);
+        cy.findByTestId('search-submit').click();
+        cy.wait('@searchResults');
+        return this;
+    }
+
+    getProductNames(): Cypress.Chainable<JQuery<HTMLElement>> {
+        return cy.get('[data-test="product-name"]');
+    }
+
+    getNoResultsMessage(): Cypress.Chainable<JQuery<HTMLElement>> {
+        return cy.get('[data-test="no-results"]');
+    }
 }
