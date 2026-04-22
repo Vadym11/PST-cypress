@@ -30,3 +30,30 @@ Cypress.Commands.add('getAdminCreds', () => {
     cy.wrap({ email: adminEmail, password: adminPassword });
   });
 });
+
+// In cypress/support/commands.ts
+Cypress.Commands.add('loginViaApi', (email: string, password: string) => {
+  cy.session(
+    [email, password],
+    () => {
+      cy.request('POST', 'api/users/login', {
+        email,
+        password
+      }).then(({ body }) => {
+        // This sets it in the app's window, not Cypress runner's
+        cy.window().then((win) => {
+          win.localStorage.setItem('auth-token', body.access_token)
+        })
+      })
+    },
+    {
+     validate: () => {
+        cy.request({
+          method: 'GET',
+          url: '/users/me',        // a cheap authenticated endpoint
+          failOnStatusCode: false
+        }).its('status').should('eq', 200)
+      }
+    }
+  )
+})
