@@ -7,18 +7,16 @@ on:
     branches: [main]
 
 jobs:
-  cypress-tests:
+  detect-changes:
     runs-on: ubuntu-latest
-
-    env:
-      K8S_NAMESPACE: toolshop-ci-${{ github.run_id }}
-      REGISTRY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/toolshop
+    outputs:
+      cypress: ${{ steps.changes.outputs.cypress }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required for accurate diffing if needed
+          fetch-depth: 0
 
       - name: Check for changes in Cypress files
         id: changes
@@ -35,6 +33,19 @@ jobs:
               - 'package-lock.json'
               - '.github/workflows/PST-Cypress.yaml'
 
+  cypress-tests:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.cypress == 'true' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force-build'))
+
+    env:
+      K8S_NAMESPACE: toolshop-ci-${{ github.run_id }}
+      REGISTRY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/toolshop
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up gcloud auth
         uses: google-github-actions/auth@v2
         with:
@@ -44,7 +55,6 @@ jobs:
         run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
 
       - name: Build and Push Cypress Image
-        if: steps.changes.outputs.cypress == 'true' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force-build'))
         id: build
         run: |
           set -euo pipefail
