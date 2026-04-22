@@ -1,6 +1,6 @@
 # PST-Cypress
 
-End-to-end test automation suite for the [Practice Software Testing (PST) Toolshop](https://practicesoftwaretesting.com) application. Combines UI and API tests to validate a full e-commerce platform — authentication, product catalog, shopping cart, and checkout flows.
+End-to-end test automation suite for [Practice Software Testing (PST) Toolshop](https://practicesoftwaretesting.com) application. Combines UI and API tests to validate a full e-commerce platform — authentication, product catalog, shopping cart, and checkout flows.
 
 ---
 
