@@ -252,7 +252,7 @@ The GitHub Actions workflow (`.github/workflows/PST-Cypress.yaml`) triggers on p
 
 **Pipeline stages:**
 
-1. **Detect changes** — skips the run if no Cypress-related files changed
+1. **Detect changes** — skips the run if no Cypress-related have files changed
 2. **Build & push** — builds the Docker image and pushes to GCP Artifact Registry
 3. **Deploy to GKE** — spins up an ephemeral namespace (`toolshop-ci-{run_id}`) with the full application stack (DB, API, web frontend, cron)
 4. **Seed database** — runs migrations and seeds test data
