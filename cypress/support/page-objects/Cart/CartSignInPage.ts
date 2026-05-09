@@ -78,4 +78,9 @@ export class CartSignInPage extends CartBasePage {
     switchToSignInForm() {
         cy.findByRole('tab', { name: 'Sign In' }).click();
     }
+
+    assertSignInPageVisible(): CartSignInPage {
+        cy.findByTestId(this.logInButtonTestId).should('be.visible');
+        return this;
+    }
 }
