@@ -215,6 +215,16 @@ jobs:
                 $(Pipeline.Workspace)/cypress-artifacts/videos || true
             fi
 
+      # create directory for test artifacts
+      - task: Bash@3
+        displayName: Check artifacts exist
+        condition: always()
+        inputs:
+          targetType: inline
+          script: |
+            mkdir -p $(Pipeline.Workspace)/cypress-artifacts
+            echo "Artifact directory ready"
+
       # Publish artifacts
       - task: PublishPipelineArtifact@1
         displayName: Publish test artifacts
