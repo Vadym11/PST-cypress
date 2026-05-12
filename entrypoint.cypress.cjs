@@ -104,15 +104,15 @@ async function sendSlackNotification({ exitCode, durationMs }) {
 
     fs.writeFileSync("/tests/tests_finished.txt", String(normalizedCode));
 
-    // const delayMinutes = 3;
-    // console.log(
-    //   `Waiting ${delayMinutes} minutes for artifact collection before exiting...`
-    // );
+    const delayMinutes = 3;
+    console.log(
+      `Waiting ${delayMinutes} minutes for artifact collection before exiting...`
+    );
 
-    // setTimeout(() => {
-    //   console.log("Exiting now.");
-    //   process.exit(normalizedCode);
-    // }, delayMinutes * 60 * 1000);
+    setTimeout(() => {
+      console.log("Exiting now.");
+      process.exit(normalizedCode);
+    }, delayMinutes * 60 * 1000);
 
     process.exit(normalizedCode);
   });
