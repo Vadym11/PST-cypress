@@ -146,7 +146,7 @@ jobs:
       - task: AzureCLI@2
         displayName: Set kubectl context for Bash steps
         inputs:
-          azureSubscription: pst-cluster-connection
+          azureSubscription: azure-subscription-connection
           scriptType: bash
           scriptLocation: inlineScript
           inlineScript: |
