@@ -46,6 +46,7 @@ jobs:
           containerRegistry: pstregistry-connection
           repository: toolshop/cypress-k8s
           dockerfile: _docker/Dockerfile.cypress
+          buildContext: .
           tags: latest
 
       # Set kubectl context to AKS
