@@ -144,6 +144,16 @@ jobs:
           arguments: -n $(K8S_NAMESPACE) -f k8s/pst-cypress.yaml
 
       - task: Bash@3
+        displayName: Debug - list pods
+        inputs:
+          targetType: inline
+          script: |
+            echo "=== All pods ==="
+            kubectl get pods -n $(K8S_NAMESPACE)
+            echo "=== All jobs ==="
+            kubectl get jobs -n $(K8S_NAMESPACE)
+
+      - task: Bash@3
         displayName: Wait for Cypress completion
         inputs:
           targetType: inline
