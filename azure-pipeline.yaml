@@ -156,37 +156,61 @@ jobs:
               --overwrite-existing
 
       - task: Bash@3
-        displayName: Debug - list pods
-        inputs:
-          targetType: inline
-          script: |
-            echo "=== All pods ==="
-            kubectl get pods -n $(K8S_NAMESPACE)
-            echo "=== All jobs ==="
-            kubectl get jobs -n $(K8S_NAMESPACE)
-
-      - task: Bash@3
-        displayName: Wait for Cypress completion
+        displayName: Wait for Cypress pod
         inputs:
           targetType: inline
           script: |
             set -euo pipefail
-
             echo "Waiting for Cypress pod to be created..."
             for _ in $(seq 1 60); do
               POD_NAME=$(kubectl get pods -n $(K8S_NAMESPACE) -l job-name=pst-cypress-tests \
                 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
               if [ -n "$POD_NAME" ]; then
                 echo "Cypress pod: $POD_NAME"
+                echo "##vso[task.setvariable variable=CYPRESS_POD_NAME]$POD_NAME"
+                break
+              fi
+              sleep 5
+            done
+            if [ -z "$POD_NAME" ]; then
+              echo "Timed out waiting for Cypress pod."
+              exit 1
+            fi
+
+      - task: Bash@3
+        displayName: Wait for tests to finish and copy artifacts
+        inputs:
+          targetType: inline
+          script: |
+            set -euo pipefail
+            POD_NAME=$(CYPRESS_POD_NAME)
+
+            echo "Waiting for sentinel file /tests/tests_finished.txt..."
+            for _ in $(seq 1 120); do
+              if kubectl exec -n $(K8S_NAMESPACE) "$POD_NAME" \
+                -- test -f /tests/tests_finished.txt 2>/dev/null; then
+                echo "Sentinel file found, copying artifacts..."
+                mkdir -p $(Pipeline.Workspace)/cypress-artifacts/screenshots
+                mkdir -p $(Pipeline.Workspace)/cypress-artifacts/videos
+                kubectl cp -n $(K8S_NAMESPACE) \
+                  "$POD_NAME:/tests/cypress/screenshots" \
+                  $(Pipeline.Workspace)/cypress-artifacts/screenshots || true
+                kubectl cp -n $(K8S_NAMESPACE) \
+                  "$POD_NAME:/tests/cypress/videos" \
+                  $(Pipeline.Workspace)/cypress-artifacts/videos || true
+                echo "Artifacts copied."
                 break
               fi
               sleep 5
             done
 
-            if [ -z "$POD_NAME" ]; then
-              echo "Timed out waiting for Cypress pod."
-              exit 1
-            fi
+      - task: Bash@3
+        displayName: Wait for job completion and check exit code
+        inputs:
+          targetType: inline
+          script: |
+            set -euo pipefail
+            POD_NAME=$(CYPRESS_POD_NAME)
 
             echo "Waiting for Cypress job to complete..."
             for _ in $(seq 1 90); do
@@ -223,26 +247,6 @@ jobs:
             if [ "$TEST_EXIT_CODE" -ne "0" ]; then
               echo "Tests failed!"
               exit 1
-            fi
-
-      # Copy artifacts from pod
-      - task: Bash@3
-        displayName: Copy test artifacts
-        condition: always()
-        inputs:
-          targetType: inline
-          script: |
-            POD_NAME=$(kubectl get pods -l job-name=pst-cypress-tests \
-              -n $(K8S_NAMESPACE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-            if [ -n "$POD_NAME" ]; then
-              mkdir -p $(Pipeline.Workspace)/cypress-artifacts/screenshots
-              mkdir -p $(Pipeline.Workspace)/cypress-artifacts/videos
-              kubectl cp -n $(K8S_NAMESPACE) \
-                "$POD_NAME:/tests/cypress/screenshots" \
-                $(Pipeline.Workspace)/cypress-artifacts/screenshots || true
-              kubectl cp -n $(K8S_NAMESPACE) \
-                "$POD_NAME:/tests/cypress/videos" \
-                $(Pipeline.Workspace)/cypress-artifacts/videos || true
             fi
 
       # create directory for test artifacts
