@@ -131,8 +131,8 @@ jobs:
           command: exec
           arguments: >
             -n $(K8S_NAMESPACE) deploy/pst-api --
-            sh -c 'chmod -R 777 storage bootstrap/cache &&
-            php artisan migrate:fresh --seed --force --no-interaction'
+            sh -c "chmod -R 777 storage bootstrap/cache &&
+            php artisan migrate:fresh --seed --force --no-interaction"
 
       # Run Cypress tests
       - task: Kubernetes@1
