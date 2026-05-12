@@ -49,13 +49,6 @@ jobs:
           buildContext: .
           tags: latest
 
-      # Set kubectl context to AKS
-      - task: KubernetesManifest@1
-        displayName: Set AKS context
-        inputs:
-          action: bake
-          kubernetesServiceConnection: pst-cluster-connection
-
       # Create namespace
       - task: Kubernetes@1
         displayName: Create namespace
