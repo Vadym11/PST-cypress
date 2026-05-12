@@ -143,7 +143,6 @@ jobs:
           command: apply
           arguments: -n $(K8S_NAMESPACE) -f k8s/pst-cypress.yaml
 
-      # Wait for Cypress pod and completion
       - task: Bash@3
         displayName: Wait for Cypress completion
         inputs:
@@ -168,8 +167,17 @@ jobs:
             fi
 
             echo "Waiting for Cypress job to complete..."
-            kubectl wait --for=condition=complete job/pst-cypress-tests \
-              -n $(K8S_NAMESPACE) --timeout=900s || true
+            for _ in $(seq 1 90); do
+              JOB_STATUS=$(kubectl get job/pst-cypress-tests -n $(K8S_NAMESPACE) \
+                -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2>/dev/null || true)
+              FAILED_STATUS=$(kubectl get job/pst-cypress-tests -n $(K8S_NAMESPACE) \
+                -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2>/dev/null || true)
+              if [ "$JOB_STATUS" = "True" ] || [ "$FAILED_STATUS" = "True" ]; then
+                echo "Job finished."
+                break
+              fi
+              sleep 10
+            done
 
             TEST_EXIT_CODE=""
             for _ in $(seq 1 30); do
