@@ -111,16 +111,14 @@ jobs:
             --timeout=180s
 
       # Wait for DB
-      - task: Kubernetes@1
+      - task: Bash@3
         displayName: Wait for DB
         inputs:
-          connectionType: Kubernetes Service Connection
-          kubernetesServiceEndpoint: pst-cluster-connection
-          command: run
-          arguments: >
-            db-waiter --rm -i -n $(K8S_NAMESPACE)
-            --image=busybox --restart=Never --
-            sh -c 'until nc -z -w3 pst-db 3306; do echo "Waiting for DB..."; sleep 3; done'
+          targetType: inline
+          script: |
+            kubectl run db-waiter --rm -i -n $(K8S_NAMESPACE) \
+              --image=busybox --restart=Never -- \
+              sh -c 'until nc -z -w3 pst-db 3306; do echo "Waiting for DB..."; sleep 3; done'
 
       # Migrate and seed DB
       - task: Kubernetes@1
