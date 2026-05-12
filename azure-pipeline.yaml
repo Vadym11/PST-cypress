@@ -143,6 +143,18 @@ jobs:
           command: apply
           arguments: -n $(K8S_NAMESPACE) -f k8s/pst-cypress.yaml
 
+      - task: AzureCLI@2
+        displayName: Set kubectl context for Bash steps
+        inputs:
+          azureSubscription: pst-cluster-connection
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az aks get-credentials \
+              --resource-group qa-portfolio \
+              --name pst-cluster \
+              --overwrite-existing
+
       - task: Bash@3
         displayName: Debug - list pods
         inputs:
