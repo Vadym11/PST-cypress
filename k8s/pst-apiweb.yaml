@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: apiweb
-          image: pstregistry.azurecr.io/toolshop/apiweb-k8s:35bce3f
+          image: 765009072847.dkr.ecr.eu-north-1.amazonaws.com/pst/toolshop:apiweb-k8s
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

@@ -13,7 +13,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: cypress
-          image: pstregistry.azurecr.io/toolshop/cypress-k8s:latest
+          image: 765009072847.dkr.ecr.eu-north-1.amazonaws.com/pst/toolshop:cypress-k8s
           resources:
             requests:
               cpu: "500m"

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: pstregistry.azurecr.io/toolshop/web-k8s:35bce3f
+          image: 765009072847.dkr.ecr.eu-north-1.amazonaws.com/pst/toolshop:web-k8s
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

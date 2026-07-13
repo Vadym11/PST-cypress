@@ -1,5 +1,5 @@
 import { CreateUser } from "../../types/user";
-import { CartBasePage } from "./CartBaseBage";
+import { CartBasePage } from "./CartBasePage";
 import { CartBillingAddressPage } from "./CartBillingAddressPage";
 
 export class CartSignInPage extends CartBasePage {

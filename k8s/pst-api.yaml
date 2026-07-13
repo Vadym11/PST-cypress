@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: pstregistry.azurecr.io/toolshop/api-k8s:35bce3f
+          image: 765009072847.dkr.ecr.eu-north-1.amazonaws.com/pst/toolshop:api-k8s
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9000

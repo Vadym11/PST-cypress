@@ -13,7 +13,7 @@ export class HomePage extends BasePage{
     }
     
     clickFirstProduct(): ProductPage {
-        cy.get('[data-test="product-name"]').first().click();
+        cy.findAllByTestId('product-name').first().click();
 
         return new ProductPage();
     }
@@ -73,10 +73,10 @@ export class HomePage extends BasePage{
     }
 
     getProductNames(): Cypress.Chainable<JQuery<HTMLElement>> {
-        return cy.get('[data-test="product-name"]');
+        return cy.findAllByTestId('product-name');
     }
 
     getNoResultsMessage(): Cypress.Chainable<JQuery<HTMLElement>> {
-        return cy.get('[data-test="no-results"]');
+        return cy.findByTestId('no-results');
     }
 }
