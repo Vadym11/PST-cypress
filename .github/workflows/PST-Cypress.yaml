@@ -67,7 +67,7 @@ jobs:
         id: build
         run: |
           set -euo pipefail
-          IMAGE_URI="${{ env.ECR_REGISTRY }}:cypress-k8s""
+          IMAGE_URI="${{ env.ECR_REGISTRY }}:cypress-k8s"
           docker build -t "$IMAGE_URI" -f _docker/Dockerfile.cypress .
           docker push "$IMAGE_URI"
 
