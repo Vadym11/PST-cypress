@@ -1,4 +1,4 @@
-import { CartBasePage } from "./CartBaseBage";
+import { CartBasePage } from "./CartBasePage";
 import { CartSignInPage } from "./CartSignInPage";
 
 export class CartMainPage extends CartBasePage {
@@ -6,7 +6,6 @@ export class CartMainPage extends CartBasePage {
     private readonly proceedToCheckoutButtonTestId = 'proceed-1';
     private readonly productTitleTestId = 'product-title';
     private readonly productQuantityTestId = 'product-quantity';
-    private readonly deleteProductButtonTestId = 'delete-product';
     private readonly cartTotalTestId = 'cart-total';
 
     clickProceedToCheckout() {
@@ -31,7 +30,9 @@ export class CartMainPage extends CartBasePage {
     }
 
     removeProductByIndex(index: number): CartMainPage {
-        cy.get('.btn.btn-danger').eq(index).click();
+        // no data-test attribute exists on the delete button, so scope the click
+        // to the correct row via product-title rather than relying on global button order
+        cy.findAllByTestId(this.productTitleTestId).eq(index).parents('tr').find('.btn-danger').click();
         return this;
     }
 

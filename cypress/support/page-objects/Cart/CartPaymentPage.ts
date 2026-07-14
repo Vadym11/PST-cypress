@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { PaymentMethod } from "../../types/payment-methods";
-import { CartBasePage } from "./CartBaseBage";
+import { CartBasePage } from "./CartBasePage";
 
 export class CartPaymentPage extends CartBasePage {
 

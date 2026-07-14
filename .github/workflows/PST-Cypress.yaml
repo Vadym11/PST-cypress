@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  id-token: write   # required for AWS OIDC token exchange
+  contents: read    # required for actions/checkout
+
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
@@ -28,7 +32,7 @@ jobs:
               - 'cypress.config.js'
               - 'entrypoint.cypress.cjs'
               - '_docker/Dockerfile.cypress'
-              - 'k8s/pst-cypress.yaml'
+              - 'k8s/aws/pst-cypress.yaml'
               - 'package.json'
               - 'package-lock.json'
               - '.github/workflows/PST-Cypress.yaml'
@@ -40,34 +44,35 @@ jobs:
 
     env:
       K8S_NAMESPACE: toolshop-ci-${{ github.run_id }}
-      REGISTRY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/toolshop
+      ECR_REGISTRY: 765009072847.dkr.ecr.eu-north-1.amazonaws.com/pst/toolshop
+      AWS_REGION: eu-north-1
+      CLUSTER_NAME: pst-cluster
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up gcloud auth
-        uses: google-github-actions/auth@v2
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          role-to-assume: arn:aws:iam::765009072847:role/github-actions-cypress-pipeline
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} \
+            | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
 
       - name: Build and Push Cypress Image
         id: build
         run: |
           set -euo pipefail
-          IMAGE_URI="${{ env.REGISTRY }}/cypress-k8s:latest"
+          IMAGE_URI="${{ env.ECR_REGISTRY }}:cypress-k8s"
           docker build -t "$IMAGE_URI" -f _docker/Dockerfile.cypress .
           docker push "$IMAGE_URI"
 
-      - name: Get GKE credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-          location: ${{ secrets.GKE_LOCATION }}
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Create namespace
         run: kubectl create namespace "$K8S_NAMESPACE"
@@ -83,17 +88,16 @@ jobs:
             --from-literal=USER_PASSWORD="${{ secrets.USER_PASSWORD }}" \
             --from-literal=FORGOT_PASSWORD="${{ secrets.FORGOT_PASSWORD }}"
 
-
       - name: Apply DB secrets
-        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-db-secret.yaml
+        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-db-secret.yaml
 
       - name: Deploy Toolshop app
         run: |
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-db.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-api.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-apiweb.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-web.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-cron.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-db.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-api.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-apiweb.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-web.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-cron.yaml
 
       - name: Wait for deployments to be ready
         run: |
@@ -116,7 +120,7 @@ jobs:
             sh -c 'chmod -R 777 storage bootstrap/cache && php artisan migrate:fresh --seed --force --no-interaction'
 
       - name: Apply Cypress test job
-        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-cypress.yaml
+        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-cypress.yaml
 
       - name: Wait for Cypress test pod
         run: |

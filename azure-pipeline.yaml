@@ -1,0 +1,279 @@
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - cypress/**
+      - cypress.config.js
+      - entrypoint.cypress.cjs
+      - _docker/Dockerfile.cypress
+      - k8s/azure/pst-cypress.yaml
+      - package.json
+      - package-lock.json
+      - azure-pipelines.yml
+
+variables:
+  - group: pst-secrets
+  - name: ACR_REGISTRY
+    value: pstregistry.azurecr.io
+  - name: ACR_REPOSITORY
+    value: toolshop/cypress-k8s
+  - name: IMAGE_TAG
+    value: latest
+  - name: K8S_NAMESPACE
+    value: toolshop-ci-$(Build.BuildId)
+
+pool:
+  vmImage: ubuntu-latest
+
+jobs:
+  - job: CypressTests
+    displayName: Build and Run Cypress Tests
+    timeoutInMinutes: 60
+
+    steps:
+      - checkout: self
+        fetchDepth: 0
+
+      # Build and push Cypress image to ACR
+      - task: Docker@2
+        displayName: Build and Push Cypress Image
+        inputs:
+          command: buildAndPush
+          containerRegistry: pstregistry-connection
+          repository: toolshop/cypress-k8s
+          dockerfile: _docker/Dockerfile.cypress
+          buildContext: .
+          tags: latest
+
+      # Create namespace
+      - task: Kubernetes@1
+        displayName: Create namespace
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: create
+          arguments: namespace $(K8S_NAMESPACE)
+
+      # Create test secret
+      - task: Kubernetes@1
+        displayName: Create test secret
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: create
+          arguments: >
+            secret generic pst-test-secret
+            -n $(K8S_NAMESPACE)
+            --from-literal=SLACK_WEBHOOK_URL=$(SLACK_WEBHOOK_URL)
+            --from-literal=ADMIN_USER_EMAIL=$(ADMIN_USER_EMAIL)
+            --from-literal=ADMIN_USER_PASSWORD=$(ADMIN_USER_PASSWORD)
+            --from-literal=USER_EMAIL=$(USER_EMAIL)
+            --from-literal=USER_PASSWORD=$(USER_PASSWORD)
+            --from-literal=FORGOT_PASSWORD=$(FORGOT_PASSWORD)
+
+      # Apply DB secret and deploy app
+      - task: Kubernetes@1
+        displayName: Apply DB secret
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: apply
+          arguments: -n $(K8S_NAMESPACE) -f k8s/azure/pst-db-secret.yaml
+
+      - task: Kubernetes@1
+        displayName: Deploy Toolshop app
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: apply
+          arguments: >
+            -n $(K8S_NAMESPACE)
+            -f k8s/azure/pst-db.yaml
+            -f k8s/azure/pst-api.yaml
+            -f k8s/azure/pst-apiweb.yaml
+            -f k8s/azure/pst-web.yaml
+            -f k8s/azure/pst-cron.yaml
+
+      # Wait for deployments
+      - task: Kubernetes@1
+        displayName: Wait for deployments
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: rollout
+          arguments: >
+            status deployment/pst-api deployment/pst-web deployment/pst-apiweb
+            -n $(K8S_NAMESPACE)
+            --timeout=180s
+
+      # Wait for DB
+      - task: Kubernetes@1
+        displayName: Wait for DB
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: run
+          arguments: >
+            db-waiter --rm -i -n $(K8S_NAMESPACE)
+            --image=busybox --restart=Never --
+            sh -c "until nc -z -w3 pst-db 3306; do echo Waiting for DB...; sleep 3; done"
+
+      # Migrate and seed DB
+      - task: Kubernetes@1
+        displayName: Migrate and seed DB
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: exec
+          arguments: >
+            -n $(K8S_NAMESPACE) deploy/pst-api --
+            sh -c "chmod -R 777 storage bootstrap/cache &&
+            php artisan migrate:fresh --seed --force --no-interaction"
+
+      # Run Cypress tests
+      - task: Kubernetes@1
+        displayName: Apply Cypress test job
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: apply
+          arguments: -n $(K8S_NAMESPACE) -f k8s/azure/pst-cypress.yaml
+
+      - task: AzureCLI@2
+        displayName: Set kubectl context for Bash steps
+        inputs:
+          azureSubscription: azure-subscription-connection
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az aks get-credentials \
+              --resource-group qa-portfolio \
+              --name pst-cluster \
+              --overwrite-existing
+
+      - task: Bash@3
+        displayName: Wait for Cypress pod
+        inputs:
+          targetType: inline
+          script: |
+            set -euo pipefail
+            echo "Waiting for Cypress pod to be created..."
+            for _ in $(seq 1 60); do
+              POD_NAME=$(kubectl get pods -n $(K8S_NAMESPACE) -l job-name=pst-cypress-tests \
+                -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+              if [ -n "$POD_NAME" ]; then
+                echo "Cypress pod: $POD_NAME"
+                echo "##vso[task.setvariable variable=CYPRESS_POD_NAME]$POD_NAME"
+                break
+              fi
+              sleep 5
+            done
+            if [ -z "$POD_NAME" ]; then
+              echo "Timed out waiting for Cypress pod."
+              exit 1
+            fi
+
+      - task: Bash@3
+        displayName: Wait for tests to finish and copy artifacts
+        inputs:
+          targetType: inline
+          script: |
+            set -euo pipefail
+            POD_NAME=$(CYPRESS_POD_NAME)
+
+            echo "Waiting for sentinel file /tests/tests_finished.txt..."
+            for _ in $(seq 1 120); do
+              if kubectl exec -n $(K8S_NAMESPACE) "$POD_NAME" \
+                -- test -f /tests/tests_finished.txt 2>/dev/null; then
+                echo "Sentinel file found, copying artifacts..."
+                mkdir -p $(Pipeline.Workspace)/cypress-artifacts/screenshots
+                mkdir -p $(Pipeline.Workspace)/cypress-artifacts/videos
+                kubectl cp -n $(K8S_NAMESPACE) \
+                  "$POD_NAME:/tests/cypress/screenshots" \
+                  $(Pipeline.Workspace)/cypress-artifacts/screenshots || true
+                kubectl cp -n $(K8S_NAMESPACE) \
+                  "$POD_NAME:/tests/cypress/videos" \
+                  $(Pipeline.Workspace)/cypress-artifacts/videos || true
+                echo "Artifacts copied."
+                break
+              fi
+              sleep 5
+            done
+
+      - task: Bash@3
+        displayName: Wait for job completion and check exit code
+        inputs:
+          targetType: inline
+          script: |
+            set -euo pipefail
+            POD_NAME=$(CYPRESS_POD_NAME)
+
+            echo "Waiting for Cypress job to complete..."
+            for _ in $(seq 1 90); do
+              JOB_STATUS=$(kubectl get job/pst-cypress-tests -n $(K8S_NAMESPACE) \
+                -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2>/dev/null || true)
+              FAILED_STATUS=$(kubectl get job/pst-cypress-tests -n $(K8S_NAMESPACE) \
+                -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2>/dev/null || true)
+              if [ "$JOB_STATUS" = "True" ] || [ "$FAILED_STATUS" = "True" ]; then
+                echo "Job finished."
+                break
+              fi
+              sleep 10
+            done
+
+            TEST_EXIT_CODE=""
+            for _ in $(seq 1 30); do
+              TEST_EXIT_CODE=$(kubectl get pod -n $(K8S_NAMESPACE) "$POD_NAME" \
+                -o jsonpath='{.status.containerStatuses[0].state.terminated.exitCode}' \
+                2>/dev/null || true)
+              if [ -n "$TEST_EXIT_CODE" ]; then break; fi
+              sleep 2
+            done
+
+            if [ -z "$TEST_EXIT_CODE" ]; then
+              echo "Could not determine Cypress exit code."
+              kubectl describe pod -n $(K8S_NAMESPACE) "$POD_NAME" || true
+              exit 1
+            fi
+
+            echo "Fetching Cypress logs..."
+            kubectl logs -n $(K8S_NAMESPACE) "$POD_NAME"
+            echo "Cypress exited with code: $TEST_EXIT_CODE"
+
+            if [ "$TEST_EXIT_CODE" -ne "0" ]; then
+              echo "Tests failed!"
+              exit 1
+            fi
+
+      # create directory for test artifacts
+      - task: Bash@3
+        displayName: Check artifacts exist
+        condition: always()
+        inputs:
+          targetType: inline
+          script: |
+            mkdir -p $(Pipeline.Workspace)/cypress-artifacts
+            echo "Artifact directory ready"
+
+      # Publish artifacts
+      - task: PublishPipelineArtifact@1
+        displayName: Publish test artifacts
+        condition: always()
+        inputs:
+          targetPath: $(Pipeline.Workspace)/cypress-artifacts
+          artifact: cypress-results
+          publishLocation: pipeline
+
+      # Cleanup namespace
+      - task: Kubernetes@1
+        displayName: Delete namespace
+        condition: always()
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: pst-cluster-connection
+          command: delete
+          arguments: namespace $(K8S_NAMESPACE) --wait=false

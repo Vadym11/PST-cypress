@@ -1,0 +1,86 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pst-cypress-tests
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 900
+  template:
+    metadata:
+      labels:
+        app: pst-cypress-tests
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: cypress
+          image: 765009072847.dkr.ecr.eu-north-1.amazonaws.com/pst/toolshop:cypress-k8s
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          imagePullPolicy: Always
+          env:
+            - name: BASE_URL
+              value: "http://pst-web:80"
+            - name: MYSQL_HOST
+              value: pst-db
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_DATABASE
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pst-test-secret
+                  key: SLACK_WEBHOOK_URL
+            - name: ADMIN_USER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: pst-test-secret
+                  key: ADMIN_USER_EMAIL
+            - name: ADMIN_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pst-test-secret
+                  key: ADMIN_USER_PASSWORD
+            - name: USER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: pst-test-secret
+                  key: USER_EMAIL
+            - name: USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pst-test-secret
+                  key: USER_PASSWORD
+            - name: FORGOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pst-test-secret
+                  key: FORGOT_PASSWORD
+            - name: TEST_NAME
+              value: "CypressTests"
+            - name: CYPRESS_VIDEO
+              value: "false"
+          volumeMounts:
+            - name: cypress-artifacts
+              mountPath: /artifacts
+      volumes:
+        - name: cypress-artifacts
+          emptyDir: {}

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: cron
-          image: europe-west1-docker.pkg.dev/project-c08bd28e-4c9b-4e57-9da/toolshop/api-k8s:35bce3f
+          image: 765009072847.dkr.ecr.eu-north-1.amazonaws.com/pst/toolshop:api-k8s
           imagePullPolicy: IfNotPresent
           command: ["php"]           # explicit, to be sure
           args: ["artisan","queue:work","--tries=3","--timeout=90"]

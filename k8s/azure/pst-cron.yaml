@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pst-cron
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pst-cron
+  template:
+    metadata:
+      labels:
+        app: pst-cron
+    spec:
+      containers:
+        - name: cron
+          image: pstregistry.azurecr.io/toolshop/api-k8s:35bce3f
+          imagePullPolicy: IfNotPresent
+          command: ["php"]           # explicit, to be sure
+          args: ["artisan","queue:work","--tries=3","--timeout=90"]
+          env:
+            - name: APP_ENV
+              value: production
+            - name: DB_CONNECTION
+              value: mysql
+            - name: DB_HOST
+              value: pst-db
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_DATABASE
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pst-db-secret
+                  key: MYSQL_PASSWORD

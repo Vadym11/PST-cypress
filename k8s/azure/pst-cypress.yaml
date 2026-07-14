@@ -13,14 +13,14 @@ spec:
       restartPolicy: Never
       containers:
         - name: cypress
-          image: europe-west1-docker.pkg.dev/project-c08bd28e-4c9b-4e57-9da/toolshop/cypress-k8s:latest
+          image: pstregistry.azurecr.io/toolshop/cypress-k8s:latest
           resources:
             requests:
-              cpu: "1000m"
-              memory: "1Gi"
+              cpu: "500m"
+              memory: "512Mi"
             limits:
-              cpu: "2000m"
-              memory: "3Gi"
+              cpu: "1000m"
+              memory: "2Gi"
           imagePullPolicy: Always
           env:
             - name: BASE_URL
