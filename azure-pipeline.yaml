@@ -10,7 +10,7 @@ pr:
       - cypress.config.js
       - entrypoint.cypress.cjs
       - _docker/Dockerfile.cypress
-      - k8s/pst-cypress.yaml
+      - k8s/azure/pst-cypress.yaml
       - package.json
       - package-lock.json
       - azure-pipelines.yml
@@ -82,7 +82,7 @@ jobs:
           connectionType: Kubernetes Service Connection
           kubernetesServiceEndpoint: pst-cluster-connection
           command: apply
-          arguments: -n $(K8S_NAMESPACE) -f k8s/pst-db-secret.yaml
+          arguments: -n $(K8S_NAMESPACE) -f k8s/azure/pst-db-secret.yaml
 
       - task: Kubernetes@1
         displayName: Deploy Toolshop app
@@ -92,11 +92,11 @@ jobs:
           command: apply
           arguments: >
             -n $(K8S_NAMESPACE)
-            -f k8s/pst-db.yaml
-            -f k8s/pst-api.yaml
-            -f k8s/pst-apiweb.yaml
-            -f k8s/pst-web.yaml
-            -f k8s/pst-cron.yaml
+            -f k8s/azure/pst-db.yaml
+            -f k8s/azure/pst-api.yaml
+            -f k8s/azure/pst-apiweb.yaml
+            -f k8s/azure/pst-web.yaml
+            -f k8s/azure/pst-cron.yaml
 
       # Wait for deployments
       - task: Kubernetes@1
@@ -141,7 +141,7 @@ jobs:
           connectionType: Kubernetes Service Connection
           kubernetesServiceEndpoint: pst-cluster-connection
           command: apply
-          arguments: -n $(K8S_NAMESPACE) -f k8s/pst-cypress.yaml
+          arguments: -n $(K8S_NAMESPACE) -f k8s/azure/pst-cypress.yaml
 
       - task: AzureCLI@2
         displayName: Set kubectl context for Bash steps

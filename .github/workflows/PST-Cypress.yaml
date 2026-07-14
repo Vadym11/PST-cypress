@@ -32,7 +32,7 @@ jobs:
               - 'cypress.config.js'
               - 'entrypoint.cypress.cjs'
               - '_docker/Dockerfile.cypress'
-              - 'k8s/pst-cypress.yaml'
+              - 'k8s/aws/pst-cypress.yaml'
               - 'package.json'
               - 'package-lock.json'
               - '.github/workflows/PST-Cypress.yaml'
@@ -89,15 +89,15 @@ jobs:
             --from-literal=FORGOT_PASSWORD="${{ secrets.FORGOT_PASSWORD }}"
 
       - name: Apply DB secrets
-        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-db-secret.yaml
+        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-db-secret.yaml
 
       - name: Deploy Toolshop app
         run: |
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-db.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-api.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-apiweb.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-web.yaml
-          kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-cron.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-db.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-api.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-apiweb.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-web.yaml
+          kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-cron.yaml
 
       - name: Wait for deployments to be ready
         run: |
@@ -120,7 +120,7 @@ jobs:
             sh -c 'chmod -R 777 storage bootstrap/cache && php artisan migrate:fresh --seed --force --no-interaction'
 
       - name: Apply Cypress test job
-        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/pst-cypress.yaml
+        run: kubectl apply -n "$K8S_NAMESPACE" -f k8s/aws/pst-cypress.yaml
 
       - name: Wait for Cypress test pod
         run: |

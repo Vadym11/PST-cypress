@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pst-apiweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pst-apiweb
+  template:
+    metadata:
+      labels:
+        app: pst-apiweb
+    spec:
+      containers:
+        - name: apiweb
+          image: pstregistry.azurecr.io/toolshop/apiweb-k8s:35bce3f
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_BACKEND_HOST
+              value: api         # stays "api"
+            - name: API_BACKEND_PORT
+              value: "9000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apiweb          # ← was pst-apiweb
+spec:
+  type: ClusterIP
+  selector:
+    app: pst-apiweb
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
